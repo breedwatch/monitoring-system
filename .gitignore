@@ -1,0 +1,7 @@
+/venv
+*.xml
+*.iml
+/testing
+/.idea
+db.json
+/helper/error.log
