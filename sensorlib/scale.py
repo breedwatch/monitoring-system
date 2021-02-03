@@ -3,6 +3,7 @@ from numpy import median
 import time
 from sensorlib.hx711 import HX711
 from configuration.local_config import LocalConfig
+from helper.error_helper import ErrorHandler
 GPIO.setmode(GPIO.BCM)
 
 
@@ -15,6 +16,7 @@ class Scale:
         self.value = 0
         self.result = 0
         self.data = 0
+        self.error = ErrorHandler()
         self.config.get_config_data()
         if self.config.scale_calibrated:
             self.hx.set_offset(float(self.config.scale_offset))
@@ -26,7 +28,8 @@ class Scale:
             print(self.offset)
             self.hx.set_offset(self.offset)
             return True
-        except Exception:
+        except Exception as e:
+            self.error.log.exception(e)
             return False
 
     def has_error(self):
@@ -44,7 +47,8 @@ class Scale:
             else:
                 return False
 
-        except Exception:
+        except Exception as e:
+            self.error.log.exception(e)
             return True
 
     def calibrate(self, weight):
@@ -70,7 +74,8 @@ class Scale:
             self.config.set_config_data("SCALE", "offset", self.hx.get_offset())
             self.config.set_config_data("SCALE", "calibrated", 1)
             return True
-        except ValueError:
+        except ValueError as e:
+            self.error.log.exception(e)
             return False
 
     def get_data(self):
@@ -83,8 +88,9 @@ class Scale:
             measure_weight = round((val / 1000), 2)
             self.hx.power_down()
             return measure_weight
-        except Exception:
-            pass
+        except Exception as e:
+            self.error.log.exception(e)
+            return False
 
     def reset(self):
         self.config.set_config_data("SCALE", "ratio", 0)

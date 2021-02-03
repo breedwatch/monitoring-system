@@ -1,10 +1,12 @@
 import Adafruit_DHT
+from helper.error_helper import ErrorHandler
 
 
 class DHT22:
     def __init__(self, pin):
         self.pin = pin
         self.data = {}
+        self.error = ErrorHandler()
 
     def get_data(self):
         try:
@@ -15,4 +17,4 @@ class DHT22:
             return self.data
 
         except Exception as e:
-            print(e)
+            self.error.log.exception(e)

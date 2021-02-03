@@ -21,9 +21,21 @@ def get_diff_seconds(last_time):
         return False
 
 
+def get_new_date(estimated_hours):
+    current_date_and_time = datetime.datetime.now()
+    hours_added = datetime.timedelta(hours=estimated_hours)
+    future_date_and_time = current_date_and_time + hours_added
+    return future_date_and_time.strftime('%Y-%m-%dT%H:%M:%S')
+
+
 def get_token_time():
     now = datetime.datetime.now()
     return now.strftime('%Y-%m-%dT%H:%M:%S') + now.strftime('.%f')[:0]
+
+
+def get_file_time():
+    now = datetime.datetime.now()
+    return now.strftime('%Y-%m-%dT%H-%M-%S') + now.strftime('.%f')[:0]
 
 
 def set_timezone(timezone):

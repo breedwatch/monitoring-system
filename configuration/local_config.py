@@ -14,6 +14,7 @@ class LocalConfig:
         self.timezone = ""
         self.app_wait_seconds = ""
         self.errors_before_restart = ""
+        self.median = ""
 
         # SCALE
         self.scale_ratio = ""
@@ -23,6 +24,7 @@ class LocalConfig:
         # AUDIO
         self.audio_fs = ""
         self.audio_duration = ""
+        self.audio_is_wav = ""
 
         # SENSORS
         self.sensor_dht22 = ""
@@ -45,7 +47,8 @@ class LocalConfig:
             self.device_location = self.config['DEFAULT']['device_location']
             self.timezone = self.config['DEFAULT']['timezone']
             self.app_wait_seconds = self.config['DEFAULT']['app_wait_seconds']
-            self.errors_before_restart = self.config['DEFAULT']['errors_before_restart']
+            self.errors_before_restart = int(self.config['DEFAULT']['errors_before_restart'])
+            self.median = int(self.config['DEFAULT']['median'])
 
             # SCALE
             self.scale_ratio = self.config['SCALE']['ratio']
@@ -55,6 +58,7 @@ class LocalConfig:
             # AUDIO
             self.audio_fs = self.config['AUDIO']['fs']
             self.audio_duration = self.config['AUDIO']['duration']
+            self.audio_is_wav = self.config['AUDIO'].getboolean('wav')
 
             # SENSORS
             self.sensor_dht22 = self.config['SENSORS'].getboolean('dht22')
