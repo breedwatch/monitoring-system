@@ -57,27 +57,33 @@ class Dataset:
     def get_dht22_data(self):
         self.update_config()
         try:
+            is_dht = True
             temp = []
             hum = []
             for i in range(int(self.config.median)):
                 dhtdata = self.dht22.get_data()
-                temp.append(dhtdata['temp'])
-                hum.append(dhtdata['hum'])
-                time.sleep(1)
+                if dhtdata:
+                    temp.append(dhtdata['temp'])
+                    hum.append(dhtdata['hum'])
+                    time.sleep(1)
+                else:
+                    is_dht = False
 
-            median_temp = median(temp)
-            median_hum = median(hum)
+            if is_dht:
+                median_temp = median(temp)
+                median_hum = median(hum)
 
-            self.db.insert({
-                "source": "dht22",
-                "time": get_time(is_dataset=True),
-                "temperature": median_temp,
-                "humidity": median_hum
-            })
-            return True
+                self.db.insert({
+                    "source": "dht22",
+                    "time": get_time(is_dataset=True),
+                    "temperature": median_temp,
+                    "humidity": median_hum
+                })
+                return True
+            else:
+                return False
 
         except Exception as e:
-            print(e)
             self.error.log.exception(e)
             return False
 
