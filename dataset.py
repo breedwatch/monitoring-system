@@ -28,7 +28,6 @@ class Dataset:
         self.update_config()
         try:
             sensor_counter = self.temp_sensor.device_count()
-            dataset = []
             ds_temp = []
             if sensor_counter != 0 and sensor_counter != "NoneType":
                 for x in range(sensor_counter):
@@ -123,6 +122,7 @@ class Dataset:
             return False
 
     def write_wav(self):
+        # todo wav dateien in extra Ordner ablegen mit Datum und Uhrzeit - Ein Ordner pro Datum und darin die Dateien mit Uhrzeit
         self.update_config()
         try:
             filename = get_file_time()

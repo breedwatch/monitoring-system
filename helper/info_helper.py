@@ -8,27 +8,8 @@ import mapping
 class InfoHelper:
     def __init__(self):
         self.config = LocalConfig()
-        self.attempt_size = 0.046
-        self.wav_attempt_size = 0.061
-        self.app_cycle_seconds = 10
-        '''
-            ermittle ob .wav gespeichert werden
-            ermittle freien speicherplatz
-            ermittle gesamten speicherplatz
-            ermittle wie oft in der Stunde gemessen wird
-            rechne wieviel stunden das system laufen kann bis es fast voll ist
-            berechne das datum und die Uhrzeit
-            schreibe das ganze in eine info.log
-            lade das ergebnis hoch
-            median beruecksichtigen pro sensor = 1 * median Sekunden
-            (3 x median) x 3,2 = Zeit fuer eine Messung
-        '''
-
-        # total, used, free = shutil.disk_usage("/")
-        #
-        # f.write("Total: %d GiB" % (total // (2**30)))
-        # f.write("Used: %d MB" % (used / 1024 / 1024)
-        # f.write("Free: %d MB" % (free / 1024 / 1024))
+        self.attempt_size = 0.046  # constant
+        self.wav_attempt_size = 0.061  # constant
 
     def calc(self):
         self.config.get_config_data()
