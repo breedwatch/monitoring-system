@@ -27,6 +27,7 @@ class LocalConfig:
         self.audio_fs = ""
         self.audio_duration = ""
         self.audio_is_wav = ""
+        self.audio_is_fft = ""
 
         # SENSORS
         self.sensor_dht22 = ""
@@ -63,6 +64,7 @@ class LocalConfig:
             self.audio_fs = self.config['AUDIO']['fs']
             self.audio_duration = self.config['AUDIO']['duration']
             self.audio_is_wav = self.config['AUDIO'].getboolean('wav')
+            self.audio_is_fft = self.config['AUDIO'].getboolean('fft')
 
             # SENSORS
             self.sensor_dht22 = self.config['SENSORS'].getboolean('dht22')
