@@ -1,9 +1,9 @@
-from sensorlib.dht22 import DHT22
-from sensorlib.ds1820 import DS18B20
-from sensorlib.scale import Scale
+from sensorlib.aht20 import AHT20
 
-ds18 = DS18B20()
-dht22 = DHT22(21)
-scale = Scale()
+sensor = AHT20()
 
-print(dht22.get_data())
+sensordata = sensor.get_data()
+if sensordata[0]:
+    print(sensordata[0])
+else:
+    print("nope")

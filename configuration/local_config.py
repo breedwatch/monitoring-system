@@ -15,11 +15,13 @@ class LocalConfig:
         self.app_wait_seconds = ""
         self.errors_before_restart = ""
         self.median = ""
+        self.delete_after_usb = ""
 
         # SCALE
         self.scale_ratio = ""
         self.scale_offset = ""
         self.scale_calibrated = ""
+        self.calibrate_weight = int(self.config['SCALE']['calibrate_weight'])
 
         # AUDIO
         self.audio_fs = ""
@@ -31,6 +33,7 @@ class LocalConfig:
         self.sensor_ds18b20 = ""
         self.sensor_scale = ""
         self.sensor_microphone = ""
+        self.sensor_aht20 = ""
 
         # ERROR
         self.error_dht22 = ""
@@ -49,6 +52,7 @@ class LocalConfig:
             self.app_wait_seconds = self.config['DEFAULT']['app_wait_seconds']
             self.errors_before_restart = int(self.config['DEFAULT']['errors_before_restart'])
             self.median = int(self.config['DEFAULT']['median'])
+            self.delete_after_usb = self.config['DEFAULT'].getboolean('delete_after_usb')
 
             # SCALE
             self.scale_ratio = self.config['SCALE']['ratio']
@@ -65,6 +69,7 @@ class LocalConfig:
             self.sensor_ds18b20 = self.config['SENSORS'].getboolean('ds18b20')
             self.sensor_scale = self.config['SENSORS'].getboolean('scale')
             self.sensor_microphone = self.config['SENSORS'].getboolean('microphone')
+            self.sensor_aht20 = self.config['SENSORS'].getboolean('aht20')
 
             # ERROR
             self.error_dht22 = self.config['ERROR']['dht22']

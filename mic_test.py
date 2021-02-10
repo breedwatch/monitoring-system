@@ -9,21 +9,19 @@ import os
 from helper.filesize_helper import get_filesize
 import shutil
 from tinydb import TinyDB
+from numpy import median
 
 data_path = "/home/pi/beemo/db.json"
 db = TinyDB(data_path)
-
-
+db.truncate()
 
 
 def get_fft_data():
-    duration = 200
-    fs = 8000
+    duration = 2
     n_window = pow(2, 12)
-    fs = 8000
+    fs = int(8000)
     n_overlap = n_window / 2
     n_fft = n_window
-    fs = int(fs)
 
     try:
         audiodata = sd.rec(int(duration) * fs, samplerate=fs, channels=1, dtype='float64')
@@ -43,7 +41,9 @@ def get_fft_data():
         data = temp_data.tolist()
 
         db.insert({"test": str(data)})
-        print("done")
+        if median(data) == 0:
+            print("data not okay")
+        print(data)
 
     except Exception as e:
         print(e)
@@ -64,6 +64,7 @@ def get_wav_data(filename):
 
 
 
+get_fft_data()
 # filename = "test.wav"
 #
 # if get_wav_data(filename):

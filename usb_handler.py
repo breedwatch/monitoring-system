@@ -4,87 +4,91 @@ import os
 import time
 from sensorlib.rgb import RGB
 from configuration.local_config import LocalConfig
-
-'''
-    Beim Start (die ersten 30 Sekunden) - schaue ob USB Stick vorhanden
-    Wenn ja:
-        welche Daten sind auf dem Stick?
-        ist conf.ini -> ueberschreibe alte conf.ini
-        ist data -> uebertrage Daten auf stick und loesche alte Daten auf Karte
-        ist tara -> tara waage
-
-        schreibe error.log auf stick
-        schreibe info.log auf stick (wieviel Platz ist auf der SD, wieviel belegt und wieviel insgesamt. 
-        Dazu wie lange noch bis SD voll ist (Was soll passieren wenn SD voll?
-        Sobald der Stick abgezogen wird, wird neugestartet und das Hauptprogramm gestartet
-'''
-led = RGB()
-config = LocalConfig()
-config.get_config_data()
+from helper.info_helper import InfoHelper
+import mapping
+from helper.clear_data_helper import clear_data
 
 
-def is_mounted():
-    attempts = 0
-    while attempts <= 30:
-        context = pyudev.Context()
-        removable = [device for device in context.list_devices(subsystem='block', DEVTYPE='disk') if
-                     device.attributes.asstring('removable') == "1"]
+class USBHandler:
+    def __init__(self):
+        self.led = RGB()
+        self.config = LocalConfig()
+        self.config.get_config_data()
+        self.info_helper = InfoHelper()
+        self.stick_path = ""
 
-        for device in removable:
-            partitions = [device.device_node for device in
-                          context.list_devices(subsystem='block', DEVTYPE='partition', parent=device)]
-            for partion in partitions:
-                path = f"/home/pi/usb-drive{partion}"
-                if not os.path.exists(os.path.join(path)):
-                    os.makedirs(f"{os.path.join(path)}")
-                os.system(f"sudo mount {partion} {path}")
-                print(f"mounted {partion}")
-                os.system(f"ls {path}")
-                usb_found = True
-                return usb_found, path
-        attempts += 1
-        print(f"{attempts} try ...")
-        time.sleep(5)
+    @staticmethod
+    def is_mounted():
+        while True:
+            context = pyudev.Context()
+            removable = [device for device in context.list_devices(subsystem='block', DEVTYPE='disk') if
+                         device.attributes.asstring('removable') == "1"]
 
+            for device in removable:
+                partitions = [device.device_node for device in
+                              context.list_devices(subsystem='block', DEVTYPE='partition', parent=device)]
 
-def listen():
-    try:
-        found, path = is_mounted()
-        if found:
-            # mark that the stick was mounted
-            led.green()
-            time.sleep(3)
-            led.off()
+                for partion in partitions:
+                    path = f"/home/pi/usb-drive{partion}"
+                    if not os.path.exists(os.path.join(path)):
+                        os.makedirs(os.path.join(path))
+                    os.system(f"sudo mount {partion} {path}")
+                    usb_found = True
+                    return usb_found, path
+            time.sleep(5)
 
-            stick_files = os.listdir(path)
-            device_config = f"config_{config.device_name}"
-            for files in stick_files:
+    def listen(self):
+        while True:
+            try:
+                found, self.stick_path = self.is_mounted()
+                if found:
+                    # indicate that the stick was mounted
+                    self.led.blink("green", 3, 0.3)
 
-                if device_config in files:
-                    os.system(f"sudo cp {path}/{device_config}/conf.ini /home/pi/conf.ini")
-                    # todo hier berechnung einfuegen fuer info.log
+                    # list files / dirs on stick
+                    stick_files = os.listdir(self.stick_path)
+                    stick_device_path = f"{self.stick_path}/{self.config.device_name}"
 
-                data_files = os.listdir("/home/pi/beemo/data")
-                device_path = f"{path}/{config.device_name}"
+                    for files in stick_files:
+                        if self.config.device_name not in files:
+                            if not os.path.exists(stick_device_path):
+                                os.system(f"sudo mkdir {stick_device_path}")
+                        else:
+                            device_stick_files = os.listdir(stick_device_path)
+                            for stick_files in device_stick_files:
+                                if "conf.ini" in stick_files:
+                                    os.system(f"sudo cp {stick_device_path}/conf.ini {mapping.config_path}")
+                                    break
 
-                if not os.path.exists(device_path):
-                    os.system(f"sudo mkdir {device_path}")
-                    os.system(f"sudo cp /home/pi/beemo/helper/error.log {path}/{config.device_name}/error.log")
-                    # os.system(f"sudo cp /home/pi/beemo/helper/info.log {path}/{config.device_name}/info.log") # todo info.log muss erst geschrieben und berechnet werden mit neuer config
+                    self.info_helper.calc()
+                    os.system(f"sudo cp {mapping.info_log} {stick_device_path}/info.log")
+                    time.sleep(1)
+                    os.system(f"sudo cp {mapping.error_log} {stick_device_path}/error.log")
+                    time.sleep(1)
+                    os.system(f"sudo cp {mapping.database_path} {stick_device_path}/data/data.json")
+                    time.sleep(1)
 
-                for data_file in data_files:
-                    done = os.system(
-                        f"sudo cp /home/pi/beemo/data/{data_file} {path}/{config.device_name}/{data_file}")
+                    done = os.system(f"sudo cp -R {mapping.data_dir_path} {self.stick_path}/{self.config.device_name}")
 
                     if done == 0:
-                        led.blink("blue", 1)
+                        self.config.get_config_data()
+                        if self.config.delete_after_usb:
+                            clear_data()
+                            os.system(f"sudo umount {self.stick_path}")
+                        self.led.green()
+                        time.sleep(30)
+                        self.led.off()
+                        os.system("sudo reboot")
                     else:
-                        led.blink("red", 2)
+                        self.led.blink("red", 2, 0.5)
 
-        os.system(f"sudo umount {path}")
-        led.blink("green", 2)
-    except Exception:
-        led.blink("red", 2)
+            except Exception as e:
+                print(e)
+                self.led.blink("red", 2, 4)
+                os.system(f"sudo umount {self.stick_path}")
+            time.sleep(5)
 
 
-listen()
+handler = USBHandler()
+
+handler.listen()

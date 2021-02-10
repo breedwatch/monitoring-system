@@ -38,6 +38,11 @@ def get_file_time():
     return now.strftime('%Y-%m-%dT%H-%M-%S') + now.strftime('.%f')[:0]
 
 
+def get_dir_time():
+    now = datetime.datetime.now()
+    return now.strftime('%Y-%m-%d')
+
+
 def set_timezone(timezone):
     try:
         new_timezone = 'sudo timedatectl set-timezone {}'.format(timezone)

@@ -7,7 +7,7 @@ from time import sleep
 
 class RGB:
     def __init__(self):
-        self.led = RGBLED(red=19, green=16, blue=20)
+        self.led = RGBLED(red=17, green=23, blue=22)
         self.led.off()
 
     def green(self):
@@ -22,22 +22,22 @@ class RGB:
     def off(self):
         self.led.color = (0, 0, 0)
 
-    def blink(self, color, times):
+    def blink(self, color, times, break_seconds):
         for i in range(times):
             if color == "green":
                 self.green()
-                sleep(0.5)
+                sleep(break_seconds)
                 self.off()
-                sleep(0.5)
+                sleep(break_seconds)
 
             if color == "red":
                 self.red()
-                sleep(0.5)
+                sleep(break_seconds)
                 self.off()
-                sleep(0.5)
+                sleep(break_seconds)
 
             if color == "blue":
                 self.blue()
-                sleep(0.5)
+                sleep(break_seconds)
                 self.off()
-                sleep(0.5)
+                sleep(break_seconds)
