@@ -26,9 +26,10 @@ class InfoHelper:
         estimated_cycles = round(free_space / mb_per_hour, 2)
 
         if not os.path.exists(mapping.info_log):
+            print("no info log")
             os.system(f"sudo touch {mapping.info_log}")
             os.system(f"sudo chmod 777 {mapping.info_log}")
-        f = open("info.log", "r+")
+        f = open(mapping.info_log, "r+")
         f.write(f"Name: {self.config.device_name} \n")
         f.write(f"Standort: {self.config.device_location} \n")
         f.write("Speicherplatz gesamt: %d GiB \n" % (total // (2**30)))

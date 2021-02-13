@@ -2,7 +2,6 @@ import pyudev
 import psutil
 import os
 import time
-from sensorlib.rgb import RGB
 from configuration.local_config import LocalConfig
 from helper.info_helper import InfoHelper
 import mapping
@@ -11,6 +10,7 @@ from helper.clear_data_helper import clear_data
 
 class USBHandler:
     def __init__(self):
+        from sensorlib.rgb import RGB
         self.led = RGB()
         self.config = LocalConfig()
         self.config.get_config_data()
@@ -31,9 +31,10 @@ class USBHandler:
                 for partion in partitions:
                     path = f"/home/pi/usb-drive{partion}"
                     if not os.path.exists(os.path.join(path)):
-                        os.makedirs(os.path.join(path))
+                        os.system(f"sudo mkdir {os.path.join(path)}")
                     os.system(f"sudo mount {partion} {path}")
                     usb_found = True
+                    print(path)
                     return usb_found, path
             time.sleep(5)
 
@@ -58,13 +59,13 @@ class USBHandler:
                             for stick_files in device_stick_files:
                                 if "conf.ini" in stick_files:
                                     os.system(f"sudo cp {stick_device_path}/conf.ini {mapping.config_path}")
-                                    break
 
                     self.info_helper.calc()
                     os.system(f"sudo cp {mapping.info_log} {stick_device_path}/info.log")
                     time.sleep(1)
                     os.system(f"sudo cp {mapping.error_log} {stick_device_path}/error.log")
                     time.sleep(1)
+                    print(f"sudo cp {mapping.database_path} {stick_device_path}/data/data.json")
                     os.system(f"sudo cp {mapping.database_path} {stick_device_path}/data/data.json")
                     time.sleep(1)
 
@@ -78,7 +79,7 @@ class USBHandler:
                         self.led.green()
                         time.sleep(30)
                         self.led.off()
-                        os.system("sudo reboot")
+                        #os.system("sudo reboot")
                     else:
                         self.led.blink("red", 2, 0.5)
 
@@ -89,6 +90,10 @@ class USBHandler:
             time.sleep(5)
 
 
-handler = USBHandler()
-
-handler.listen()
+config = LocalConfig()
+config.get_config_data()
+if config.scale_calibrated:
+    handler = USBHandler()
+    handler.listen()
+else:
+    print("nope")

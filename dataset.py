@@ -21,7 +21,8 @@ class Dataset:
         # todo: wenn die Datei groesser als 5MB ist, erstelle eine neue db und benutz die
         self.db = TinyDB(mapping.database_path)
         self.db.truncate()
-        self.dht22 = DHT22()
+        if self.config.sensor_dht22:
+            self.dht22 = DHT22()
         self.temp_sensor = DS18B20()
         self.microphone = Microphone()
         self.scale = Scale()
@@ -121,25 +122,30 @@ class Dataset:
     def get_fft_data(self):
         self.update_config()
         try:
-            is_fft, fft_data = self.microphone.get_fft_data()
-
-            if is_fft:
+            fft_data = self.microphone.get_fft_data()
+            print(fft_data)
+            # todo add duration
+            # todo fft halbe herz schritte messen?
+            if fft_data["status"]:
                 dir_name = get_dir_time()
                 if not os.path.exists(f"{mapping.fft_path}/{dir_name}"):
-                    os.mkdir(f"{mapping.fft_path}/{dir_name}")
+                    os.system(f"sudo mkdir {mapping.fft_path}/{dir_name}")
 
                 file_name = get_file_time()
+                os.system(f"sudo touch {mapping.fft_path}/{dir_name}/{file_name}.json")
+                os.system(f"sudo chmod 777 {mapping.fft_path}/{dir_name}/{file_name}.json")
                 db = TinyDB(f"{mapping.fft_path}/{dir_name}/{file_name}.json")
                 db.insert({
                     "source": "microphone",
                     "time": get_time(is_dataset=True),
-                    "data": str(fft_data),
+                    "data": str(fft_data["data"]),
                 })
                 return True
             else:
                 return False
 
         except Exception as e:
+            print(e)
             self.error.log.exception(e)
             return False
 
@@ -148,7 +154,7 @@ class Dataset:
         try:
             dir_name = get_dir_time()
             if not os.path.exists(f"{mapping.wav_path}/{dir_name}"):
-                os.mkdir(f"{mapping.wav_path}/{dir_name}")
+                os.system(f"sudo mkdir {mapping.wav_path}/{dir_name}")
             filename = get_file_time()
             filepath = f"{mapping.wav_path}/{dir_name}/{filename}.wav"
 

@@ -38,9 +38,10 @@ class Microphone:
             temp_data = np.array(pxx).astype(float)
             data = temp_data.tolist()
 
-            return True, data
+            return {"status": True, "data": data}
 
         except Exception as e:
+            print(e)
             self.error.log.exception(e)
             return False
 
