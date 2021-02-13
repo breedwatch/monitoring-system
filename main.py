@@ -31,6 +31,7 @@ if not config.scale_calibrated:
 else:
     while True:
         try:
+            config.get_config_data()
             print("start measure")
             if config.audio_is_fft and config.sensor_microphone:
                 data.get_fft_data()
@@ -46,6 +47,7 @@ else:
                 data.get_ds18b20_data()
             time.sleep(int(config.app_wait_seconds))
         except Exception as e:
+            print(e)
             error.log.exception(e)
             continue
         except KeyboardInterrupt:

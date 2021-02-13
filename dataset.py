@@ -1,4 +1,3 @@
-from sensorlib.dht22 import DHT22
 from sensorlib.ds1820 import DS18B20
 from sensorlib.scale import Scale
 from sensorlib.aht20 import AHT20
@@ -22,6 +21,7 @@ class Dataset:
         self.db = TinyDB(mapping.database_path)
         self.db.truncate()
         if self.config.sensor_dht22:
+            from sensorlib.dht22 import DHT22
             self.dht22 = DHT22()
         self.temp_sensor = DS18B20()
         self.microphone = Microphone()
@@ -151,18 +151,19 @@ class Dataset:
 
     def write_wav(self):
         self.update_config()
+        print("get wav")
         try:
             dir_name = get_dir_time()
             if not os.path.exists(f"{mapping.wav_path}/{dir_name}"):
                 os.system(f"sudo mkdir {mapping.wav_path}/{dir_name}")
             filename = get_file_time()
             filepath = f"{mapping.wav_path}/{dir_name}/{filename}.wav"
-
             if self.microphone.write_wav_data(filepath):
                 return True
             else:
                 return False
 
         except Exception as e:
+            print(e)
             self.error.log.exception(e)
             return False

@@ -4,6 +4,7 @@ import numpy as np
 from scipy.io.wavfile import write
 from helper.error_helper import ErrorHandler
 from scipy import signal
+import os
 
 
 class Microphone:
@@ -52,5 +53,6 @@ class Microphone:
             write(filepath, self.fs, recording)
             return True
         except Exception as e:
+            print(e)
             self.error.log.exception(e)
             return False
