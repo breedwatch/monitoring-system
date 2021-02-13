@@ -5,7 +5,7 @@ import time
 from configuration.local_config import LocalConfig
 from helper.info_helper import InfoHelper
 import mapping
-from helper.clear_data_helper import clear_data
+import shutil
 
 
 class USBHandler:
@@ -61,27 +61,39 @@ class USBHandler:
                                     os.system(f"sudo cp {stick_device_path}/conf.ini {mapping.config_path}")
 
                     self.info_helper.calc()
-                    os.system(f"sudo cp {mapping.info_log} {stick_device_path}/info.log")
-                    time.sleep(1)
-                    os.system(f"sudo cp {mapping.error_log} {stick_device_path}/error.log")
-                    time.sleep(1)
-                    print(f"sudo cp {mapping.database_path} {stick_device_path}/data/data.json")
-                    os.system(f"sudo cp {mapping.database_path} {stick_device_path}/data/data.json")
-                    time.sleep(1)
 
-                    done = os.system(f"sudo cp -R {mapping.data_dir_path} {self.stick_path}/{self.config.device_name}")
+                    self.config.get_config_data()
+                    if self.config.delete_after_usb:
+                        shutil.move(mapping.info_log, f"{stick_device_path}/info.log")
+                        time.sleep(0.5)
+                        shutil.move(mapping.error_log, f"{stick_device_path}/error.log")
+                        time.sleep(0.5)
+                        os.system(f"touch {mapping.error_log}")
+                        time.sleep(0.5)
+                        shutil.move(mapping.data_dir_path, f"{self.stick_path}/{self.config.device_name}")
 
-                    if done == 0:
-                        self.config.get_config_data()
-                        if self.config.delete_after_usb:
-                            clear_data()
-                            os.system(f"sudo umount {self.stick_path}")
-                        self.led.green()
-                        time.sleep(30)
-                        self.led.off()
-                        #os.system("sudo reboot")
+                        # create new data dir
+                        os.system(f"mkdir {mapping.data_dir_path}")
+                        # create fft dir
+                        os.system(f"mkdir {mapping.data_dir_path}fft")
+                        # create wav dir
+                        os.system(f"mkdir {mapping.data_dir_path}wav")
+                        # create data.json
+                        os.system(f"touch {mapping.database_path}")
+
                     else:
-                        self.led.blink("red", 2, 0.5)
+                        shutil.copy(mapping.info_log, f"{stick_device_path}/info.log")
+                        time.sleep(0.5)
+                        shutil.copy(mapping.error_log, f"{stick_device_path}/error.log")
+                        time.sleep(0.5)
+                        shutil.copytree(mapping.data_dir_path, f"{self.stick_path}/{self.config.device_name}/data")
+                        time.sleep(0.5)
+
+                    os.system(f"sudo umount {self.stick_path}")
+                    self.led.green()
+                    time.sleep(30)
+                    self.led.off()
+                    os.system("sudo reboot")
 
             except Exception as e:
                 print(e)
@@ -95,5 +107,3 @@ config.get_config_data()
 if config.scale_calibrated:
     handler = USBHandler()
     handler.listen()
-else:
-    print("nope")

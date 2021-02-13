@@ -1,10 +1,11 @@
 import mapping
 import os
+import shutil
 
 
 def clear_data():
     # delete data dir
-    os.system(f"sudo rm -R {mapping.data_dir_path}")
+    shutil.rmtree(mapping.data_dir_path)
     # create new data dir
     os.system(f"mkdir {mapping.data_dir_path}")
     # create fft dir

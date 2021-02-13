@@ -1,7 +1,6 @@
 from dataset import Dataset
 from helper.clear_data_helper import clear_data
 
-clear_data()
-#dataset = Dataset()
+dataset = Dataset()
 
-#dataset.write_wav()
+dataset.write_wav()
