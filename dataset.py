@@ -20,6 +20,7 @@ class Dataset:
         # todo: wenn die Datei groesser als 5MB ist, erstelle eine neue db und benutz die
         self.db = TinyDB(mapping.database_path)
         self.db.truncate()
+        # deprecated
         if self.config.sensor_dht22:
             from sensorlib.dht22 import DHT22
             self.dht22 = DHT22()

@@ -53,12 +53,20 @@ class USBHandler:
                     for files in stick_files:
                         if self.config.device_name not in files:
                             if not os.path.exists(stick_device_path):
-                                os.system(f"sudo mkdir {stick_device_path}")
+                                os.mkdir(stick_device_path)
                         else:
                             device_stick_files = os.listdir(stick_device_path)
                             for stick_files in device_stick_files:
                                 if "conf.ini" in stick_files:
-                                    os.system(f"sudo cp {stick_device_path}/conf.ini {mapping.config_path}")
+                                    config.get_config_data()
+                                    scale_offset = config.scale_offset
+                                    scale_ratio = config.scale_ratio
+                                    is_calibrated = config.scale_calibrated
+                                    shutil.copy(os.path.join(stick_device_path, "conf.ini"), mapping.config_path)
+                                    config.set_config_data("SCALE", "ratio", scale_ratio)
+                                    config.set_config_data("SCALE", "offset", scale_offset)
+                                    config.set_config_data("SCALE", "calibrated", is_calibrated)
+                                    break
 
                     self.info_helper.calc()
 
@@ -68,16 +76,17 @@ class USBHandler:
                         time.sleep(0.5)
                         shutil.move(mapping.error_log, f"{stick_device_path}/error.log")
                         time.sleep(0.5)
-                        os.system(f"touch {mapping.error_log}")
+                        os.mknod(mapping.error_log)
+                        os.system(f"sudo chmod 755 {mapping.error_log}")
                         time.sleep(0.5)
                         shutil.move(mapping.data_dir_path, f"{self.stick_path}/{self.config.device_name}")
 
                         # create new data dir
-                        os.system(f"mkdir {mapping.data_dir_path}")
+                        os.mkdir(mapping.data_dir_path)
                         # create fft dir
-                        os.system(f"mkdir {mapping.data_dir_path}fft")
+                        os.mkdir(os.path.join(mapping.data_dir_path, "fft"))
                         # create wav dir
-                        os.system(f"mkdir {mapping.data_dir_path}wav")
+                        os.mkdir(os.path.join(mapping.data_dir_path, "wav"))
                         # create data.json
                         os.system(f"touch {mapping.database_path}")
 

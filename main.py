@@ -11,14 +11,15 @@ error = ErrorHandler()
 
 
 if not config.scale_calibrated:
+    # calibration
     try:
         from sensorlib.rgb import RGB
         led = RGB()
         led.blink("blue", 3, 0.3)
         led.red()
         time.sleep(15)
-        data.scale.setup()
         led.off()
+        data.scale.setup()
         led.green()
         time.sleep(15)
         data.scale.calibrate(config.calibrate_weight)
@@ -30,9 +31,9 @@ if not config.scale_calibrated:
         error.log.exception(e)
 else:
     while True:
+        # start measuring
         try:
             config.get_config_data()
-            print("start measure")
             if config.audio_is_fft and config.sensor_microphone:
                 data.get_fft_data()
             if config.audio_is_wav and config.sensor_microphone:
