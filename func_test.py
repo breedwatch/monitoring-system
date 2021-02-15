@@ -1,7 +1,5 @@
-from configuration.local_config import LocalConfig
+from dataset import Dataset
 
-config = LocalConfig()
+data = Dataset()
 
-for sensor, val in config.get_all_sensors().items():
-    if val:
-        print(sensor)
+data.get_data("aht20")

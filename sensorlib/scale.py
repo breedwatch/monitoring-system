@@ -3,7 +3,7 @@ from numpy import median
 import time
 from sensorlib.hx711 import HX711
 from configuration.local_config import LocalConfig
-from helper.error_helper import ErrorHandler
+from helper.logger import ErrorHandler
 GPIO.setmode(GPIO.BCM)
 
 
@@ -18,9 +18,9 @@ class Scale:
         self.data = 0
         self.error = ErrorHandler()
         self.config.get_config_data()
-        if self.config.scale_calibrated:
-            self.hx.set_offset(float(self.config.scale_offset))
-            self.hx.set_scale(float(self.config.scale_ratio))
+        if self.config.scale["calibrated"]:
+            self.hx.set_offset(float(self.config.scale["offset"]))
+            self.hx.set_scale(float(self.config.scale["ratio"]))
 
     def setup(self):
         try:

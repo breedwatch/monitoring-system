@@ -48,10 +48,10 @@ class USBHandler:
 
                     # list files / dirs on stick
                     stick_files = os.listdir(self.stick_path)
-                    stick_device_path = f"{self.stick_path}/{self.config.device_name}"
+                    stick_device_path = f"{self.stick_path}/{self.config.settings['device_name']}"
 
                     for files in stick_files:
-                        if self.config.device_name not in files:
+                        if self.config.settings['device_name'] not in files:
                             if not os.path.exists(stick_device_path):
                                 os.mkdir(stick_device_path)
                         else:
@@ -59,9 +59,9 @@ class USBHandler:
                             for stick_files in device_stick_files:
                                 if "conf.ini" in stick_files:
                                     config.get_config_data()
-                                    scale_offset = config.scale_offset
-                                    scale_ratio = config.scale_ratio
-                                    is_calibrated = config.scale_calibrated
+                                    scale_offset = config.scale["offset"]
+                                    scale_ratio = config.scale["ratio"]
+                                    is_calibrated = config.scale["calibrated"]
                                     shutil.copy(os.path.join(stick_device_path, "conf.ini"), mapping.config_path)
                                     config.set_config_data("SCALE", "ratio", scale_ratio)
                                     config.set_config_data("SCALE", "offset", scale_offset)
@@ -71,7 +71,7 @@ class USBHandler:
                     self.info_helper.calc()
 
                     self.config.get_config_data()
-                    if self.config.delete_after_usb:
+                    if self.config.settings["delete_after_usb"]:
                         shutil.move(mapping.info_log, f"{stick_device_path}/info.log")
                         time.sleep(0.5)
                         shutil.move(mapping.error_log, f"{stick_device_path}/error.log")
@@ -79,7 +79,7 @@ class USBHandler:
                         os.mknod(mapping.error_log)
                         os.system(f"sudo chmod 755 {mapping.error_log}")
                         time.sleep(0.5)
-                        shutil.move(mapping.data_dir_path, f"{self.stick_path}/{self.config.device_name}")
+                        shutil.move(mapping.data_dir_path, f"{self.stick_path}/{self.config.settings['device_name']}")
 
                         # create new data dir
                         os.mkdir(mapping.data_dir_path)
@@ -95,7 +95,8 @@ class USBHandler:
                         time.sleep(0.5)
                         shutil.copy(mapping.error_log, f"{stick_device_path}/error.log")
                         time.sleep(0.5)
-                        shutil.copytree(mapping.data_dir_path, f"{self.stick_path}/{self.config.device_name}/data")
+                        shutil.copytree(mapping.data_dir_path,
+                                        f"{self.stick_path}/{self.config.settings['device_name']}/data")
                         time.sleep(0.5)
 
                     os.system(f"sudo umount {self.stick_path}")
@@ -113,6 +114,6 @@ class USBHandler:
 
 config = LocalConfig()
 config.get_config_data()
-if config.scale_calibrated:
+if config.scale["calibrated"]:
     handler = USBHandler()
     handler.listen()

@@ -18,7 +18,7 @@ class Dataset:
     def __init__(self):
         self.config = LocalConfig()
         self.config.get_config_data()
-        self.sensors = self.config.get_all_sensors()
+        self.sensors = self.config.data
         self.error = ErrorHandler()
         # todo: wenn die Datei groesser als 5MB ist, erstelle eine neue db und benutz die
         self.db = TinyDB(mapping.database_path)
@@ -34,8 +34,9 @@ class Dataset:
 
     def get_data(self, sensor_name):
         try:
-            for sensor in self.sensors:
-                if sensor_name == sensor:
+            self.config.get_config_data()
+            for sensor, is_active in self.sensors.items():
+                if sensor_name == sensor and is_active:
                     return getattr(self, 'get_' + sensor)()
         except Exception as e:
             print(e)
@@ -47,7 +48,7 @@ class Dataset:
             ds_temp = []
             if sensor_counter != 0 and sensor_counter != "NoneType":
                 for x in range(sensor_counter):
-                    for i in range(int(self.config.median)):
+                    for i in range(int(self.config.settings["median"])):
                         value = self.temp_sensor.tempC(x)
                         if value == 998 or value == 85.0:
                             return False
@@ -129,7 +130,7 @@ class Dataset:
 
     def update_config(self):
         self.config.get_config_data()
-        self.microphone.write_configuration_data(self.config.audio_duration, self.config.audio_fs)
+        self.microphone.write_configuration_data(int(self.config.audio["duration"]), int(self.config.audio["fs"]))
 
     def get_fft(self):
         self.update_config()

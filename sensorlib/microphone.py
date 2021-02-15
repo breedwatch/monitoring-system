@@ -2,7 +2,7 @@ import sounddevice as sd
 import scipy.io.wavfile
 import numpy as np
 from scipy.io.wavfile import write
-from helper.error_helper import ErrorHandler
+from helper.logger import ErrorHandler
 from scipy import signal
 import os
 
