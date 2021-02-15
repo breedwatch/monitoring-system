@@ -1,3 +1,4 @@
+# Version 0.1
 from dataset import Dataset
 from configuration.local_config import LocalConfig
 from helper.logger import ErrorHandler
