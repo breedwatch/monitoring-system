@@ -6,7 +6,15 @@ class LocalConfig:
         self.path = "/home/pi/conf.ini"
         self.config = configparser.ConfigParser()
         self.config.read(self.path)
-        self.config.sections()
+
+        self.settings = {}
+        self.audio = {}
+        self.scale = {}
+        self.data = {}
+        self.error = {}
+        for sections in self.config.sections():
+
+
 
         # DEFAULT
         self.device_name = ""
@@ -48,13 +56,13 @@ class LocalConfig:
             self.config.read(self.path)
 
             # DEFAULT
-            self.device_name = self.config['DEFAULT']['device_name']
-            self.device_location = self.config['DEFAULT']['device_location']
-            self.timezone = self.config['DEFAULT']['timezone']
-            self.app_wait_seconds = self.config['DEFAULT']['app_wait_seconds']
-            self.errors_before_restart = int(self.config['DEFAULT']['errors_before_restart'])
-            self.median = int(self.config['DEFAULT']['median'])
-            self.delete_after_usb = self.config['DEFAULT'].getboolean('delete_after_usb')
+            self.device_name = self.config['SETTINGS']['device_name']
+            self.device_location = self.config['SETTINGS']['device_location']
+            self.timezone = self.config['SETTINGS']['timezone']
+            self.app_wait_seconds = self.config['SETTINGS']['app_wait_seconds']
+            self.errors_before_restart = int(self.config['SETTINGS']['errors_before_restart'])
+            self.median = int(self.config['SETTINGS']['median'])
+            self.delete_after_usb = self.config['SETTINGS'].getboolean('delete_after_usb')
 
             # SCALE
             self.scale_ratio = self.config['SCALE']['ratio']
@@ -75,7 +83,6 @@ class LocalConfig:
             self.sensor_aht20 = self.config['SENSORS'].getboolean('aht20')
 
             # ERROR
-            self.error_dht22 = int(self.config['ERROR']['dht22'])
             self.error_ds18b20 = int(self.config['ERROR']['ds18b20'])
             self.error_scale = int(self.config['ERROR']['scale'])
             self.error_microphone = int(self.config['ERROR']['microphone'])
@@ -84,6 +91,20 @@ class LocalConfig:
             return True
         except IOError:
             return False
+
+    def get_all_sensors(self):
+        sensors = {}
+        for (each_key, each_val) in self.config.items("SENSORS"):
+            if each_val == "1":
+                each_val = True
+            else:
+                each_val = False
+            sensors[each_key] = each_val
+
+        return sensors
+
+    def set_error(self, sensor, value):
+        self.set_config_data("ERROR", sensor, value)
 
     def set_config_data(self, section, key, value):
         print(f"set config data {value}")

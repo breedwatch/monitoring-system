@@ -11,25 +11,36 @@ import time
 from numpy import median
 import os
 
+# sensors = microphone, scale, ds18b20, aht20
+
 
 class Dataset:
     def __init__(self):
         self.config = LocalConfig()
         self.config.get_config_data()
+        self.sensors = self.config.get_all_sensors()
         self.error = ErrorHandler()
         # todo: wenn die Datei groesser als 5MB ist, erstelle eine neue db und benutz die
         self.db = TinyDB(mapping.database_path)
         self.db.truncate()
         # deprecated
-        if self.config.sensor_dht22:
-            from sensorlib.dht22 import DHT22
-            self.dht22 = DHT22()
+        # if self.config.sensor_dht22:
+        #     from sensorlib.dht22 import DHT22
+        #     self.dht22 = DHT22()
         self.temp_sensor = DS18B20()
         self.microphone = Microphone()
         self.scale = Scale()
         self.aht20 = AHT20()
 
-    def get_ds18b20_data(self):
+    def get_data(self, sensor_name):
+        try:
+            for sensor in self.sensors:
+                if sensor_name == sensor:
+                    return getattr(self, 'get_' + sensor)()
+        except Exception as e:
+            print(e)
+
+    def get_ds18b20(self):
         self.update_config()
         try:
             sensor_counter = self.temp_sensor.device_count()
@@ -59,7 +70,7 @@ class Dataset:
             self.error.log.exception(e)
             return False
 
-    def get_aht20_data(self):
+    def get_aht20(self):
         try:
             self.update_config()
             aht_data = self.aht20.get_data()
@@ -78,28 +89,28 @@ class Dataset:
             self.error.log.exception(e)
             return False
 
-    def get_dht22_data(self):
-        self.update_config()
-        try:
-            dht_data = self.dht22.get_data()
+    # def get_dht22(self):
+    #     self.update_config()
+    #     try:
+    #         dht_data = self.dht22.get_data()
+    #
+    #         if dht_data:
+    #
+    #             self.db.insert({
+    #                 "source": "dht22",
+    #                 "time": get_time(is_dataset=True),
+    #                 "temperature": dht_data["temp"],
+    #                 "humidity": dht_data["hum"]
+    #             })
+    #             return True
+    #         else:
+    #             return False
+    #
+    #     except Exception as e:
+    #         self.error.log.exception(e)
+    #         return False
 
-            if dht_data:
-
-                self.db.insert({
-                    "source": "dht22",
-                    "time": get_time(is_dataset=True),
-                    "temperature": dht_data["temp"],
-                    "humidity": dht_data["hum"]
-                })
-                return True
-            else:
-                return False
-
-        except Exception as e:
-            self.error.log.exception(e)
-            return False
-
-    def get_scale_data(self):
+    def get_scale(self):
         self.update_config()
         try:
             weight = self.scale.get_data()
@@ -120,7 +131,7 @@ class Dataset:
         self.config.get_config_data()
         self.microphone.write_configuration_data(self.config.audio_duration, self.config.audio_fs)
 
-    def get_fft_data(self):
+    def get_fft(self):
         self.update_config()
         try:
             fft_data = self.microphone.get_fft_data()
@@ -150,9 +161,8 @@ class Dataset:
             self.error.log.exception(e)
             return False
 
-    def write_wav(self):
+    def get_wav(self):
         self.update_config()
-        print("get wav")
         try:
             dir_name = get_dir_time()
             if not os.path.exists(f"{mapping.wav_path}/{dir_name}"):
