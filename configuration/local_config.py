@@ -41,6 +41,7 @@ class LocalConfig:
         self.error_ds18b20 = ""
         self.error_scale = ""
         self.error_microphone = ""
+        self.error_aht20 = ""
 
     def get_config_data(self):
         try:
@@ -74,10 +75,11 @@ class LocalConfig:
             self.sensor_aht20 = self.config['SENSORS'].getboolean('aht20')
 
             # ERROR
-            self.error_dht22 = self.config['ERROR']['dht22']
-            self.error_ds18b20 = self.config['ERROR']['ds18b20']
-            self.error_scale = self.config['ERROR']['scale']
-            self.error_microphone = self.config['ERROR']['microphone']
+            self.error_dht22 = int(self.config['ERROR']['dht22'])
+            self.error_ds18b20 = int(self.config['ERROR']['ds18b20'])
+            self.error_scale = int(self.config['ERROR']['scale'])
+            self.error_microphone = int(self.config['ERROR']['microphone'])
+            self.error_aht20 = int(self.config['ERROR']['aht20'])
 
             return True
         except IOError:
@@ -94,3 +96,4 @@ class LocalConfig:
                 self.config.write(configfile)
         except IOError as e:
             print(e)
+

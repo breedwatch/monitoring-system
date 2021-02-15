@@ -36,6 +36,8 @@ else:
             config.get_config_data()
             if config.audio_is_fft and config.sensor_microphone:
                 data.get_fft_data()
+            else:
+                sensor_error = config.error_microphone + 1
             if config.audio_is_wav and config.sensor_microphone:
                 data.write_wav()
             if config.sensor_scale:
