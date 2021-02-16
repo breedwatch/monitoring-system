@@ -68,17 +68,8 @@ class USBHandler:
                                     config.set_config_data("SCALE", "calibrated", is_calibrated)
                                     break
 
-                    self.info_helper.calc()
-
                     self.config.get_config_data()
                     if self.config.settings["delete_after_usb"]:
-                        shutil.move(mapping.info_log, f"{stick_device_path}/info.log")
-                        time.sleep(0.5)
-                        shutil.move(mapping.error_log, f"{stick_device_path}/error.log")
-                        time.sleep(0.5)
-                        os.mknod(mapping.error_log)
-                        os.system(f"sudo chmod 755 {mapping.error_log}")
-                        time.sleep(0.5)
                         shutil.move(mapping.data_dir_path, f"{self.stick_path}/{self.config.settings['device_name']}")
 
                         # create new data dir
@@ -91,13 +82,19 @@ class USBHandler:
                         os.system(f"touch {mapping.database_path}")
 
                     else:
-                        shutil.copy(mapping.info_log, f"{stick_device_path}/info.log")
-                        time.sleep(0.5)
-                        shutil.copy(mapping.error_log, f"{stick_device_path}/error.log")
-                        time.sleep(0.5)
                         shutil.copytree(mapping.data_dir_path,
                                         f"{self.stick_path}/{self.config.settings['device_name']}/data")
                         time.sleep(0.5)
+
+                    if self.info_helper.calc():
+                        shutil.move(mapping.info_log, f"{stick_device_path}/info.log")
+                        time.sleep(0.5)
+
+                    shutil.move(mapping.error_log, f"{stick_device_path}/error.log")
+                    time.sleep(0.5)
+                    os.mknod(mapping.error_log)
+                    os.system(f"sudo chmod 755 {mapping.error_log}")
+                    time.sleep(0.5)
 
                     os.system(f"sudo umount {self.stick_path}")
                     self.led.green()
