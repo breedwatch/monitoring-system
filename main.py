@@ -36,11 +36,13 @@ else:
             # iterate all sensors in DATA (conf.ini)
             for sensor in config.data:
                 # get data from sensor
+                print(sensor)
                 data.get_data(sensor)
 
             # sleep x Seconds (app_weight_seconds) (conf.ini)
             time.sleep(int(config.settings["app_wait_seconds"]))
         except Exception as e:
+            print(e)
             error.log.exception(e)
             continue
         except KeyboardInterrupt:
