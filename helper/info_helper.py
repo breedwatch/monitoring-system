@@ -13,7 +13,7 @@ class InfoHelper:
 
     def calc(self):
         self.config.get_config_data()
-        if self.config.audio["is_wav"]:
+        if self.config.data["wav"]:
             self.attempt_size = self.wav_attempt_size * int(self.config.audio["duration"])
 
         total, used, free = shutil.disk_usage("/")
@@ -39,3 +39,4 @@ class InfoHelper:
         f.write(f"Tage bis Speicher voll: {round(estimated_cycles / 24, 1)} Tage \n")
         f.write(f"Datum bis Speicher voll: {get_new_date(estimated_cycles)}")
         f.close()
+        return True
