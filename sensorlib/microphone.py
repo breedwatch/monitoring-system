@@ -44,7 +44,7 @@ class Microphone:
         except Exception as e:
             print(e)
             self.error.log.exception(e)
-            return False
+            return {"status": False, "data": 0}
 
     def write_wav_data(self, filepath):
         try:

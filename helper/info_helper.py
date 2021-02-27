@@ -11,6 +11,20 @@ class InfoHelper:
         self.attempt_size = 0.046  # constant
         self.wav_attempt_size = 0.061  # constant
 
+    @staticmethod
+    def current_volt():
+        try:
+            v_out = []
+            with open(mapping.witty_pi_log) as f:
+                for i, line in enumerate(f):
+                    if 'Current Vout' in line:
+                        v_out.append(line)
+            length = len(v_out) - 1
+
+            return v_out[length][:-1]
+        except Exception:
+            return False
+
     def calc(self):
         self.config.get_config_data()
         if self.config.data["wav"]:
@@ -38,5 +52,32 @@ class InfoHelper:
         f.write(f"Stunden bis Speicher voll: {estimated_cycles} Stunden \n")
         f.write(f"Tage bis Speicher voll: {round(estimated_cycles / 24, 1)} Tage \n")
         f.write(f"Datum bis Speicher voll: {get_new_date(estimated_cycles)}")
+        f.write("------------------------------------------------------- \n")
+        f.write("WITTYPI")
+        if self.current_volt():
+            f.write(str(self.current_volt()))
         f.close()
         return True
+
+
+# todo
+"""
+eigene Error Classes
+
+"""
+
+
+class ValueTooHighError(Exception):
+    def __init__(self, message):
+        # message wird in den Error Log geschrieben oder self healing tools?
+        pass
+
+try:
+    print("this")
+except ValueTooHighError:
+    pass
+
+
+def test_func(hello):
+    if not hello == "hello":
+        raise ValueTooHighError("das ist eine Fehlermeldung")

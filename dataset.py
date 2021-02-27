@@ -1,7 +1,3 @@
-from sensorlib.ds1820 import DS18B20
-from sensorlib.scale import Scale
-from sensorlib.aht20 import AHT20
-from sensorlib.microphone import Microphone
 from tinydb import TinyDB
 from helper.logger import ErrorHandler
 from helper.time_helper import get_time, get_file_time, get_dir_time
@@ -24,13 +20,21 @@ class Dataset:
         self.db = TinyDB(mapping.database_path)
         self.db.truncate()
         # deprecated
-        # if self.config.sensor_dht22:
-        #     from sensorlib.dht22 import DHT22
-        #     self.dht22 = DHT22()
-        self.temp_sensor = DS18B20()
-        self.microphone = Microphone()
-        self.scale = Scale()
-        self.aht20 = AHT20()
+        if self.config.data["dht22"]:
+            from sensorlib.dht22 import DHT22
+            self.dht22 = DHT22()
+        if self.config.data["ds18b20"]:
+            from sensorlib.ds1820 import DS18B20
+            self.temp_sensor = DS18B20()
+        if self.config.data["fft"] ^ self.config.data["wav"]:
+            from sensorlib.microphone import Microphone
+            self.microphone = Microphone()
+        if self.config.data["scale"]:
+            from sensorlib.scale import Scale
+            self.scale = Scale()
+        if self.config.data["aht20"]:
+            from sensorlib.aht20 import AHT20
+            self.aht20 = AHT20()
 
     def get_data(self, sensor_name):
         try:
@@ -90,26 +94,26 @@ class Dataset:
             self.error.log.exception(e)
             return False
 
-    # def get_dht22(self):
-    #     self.update_config()
-    #     try:
-    #         dht_data = self.dht22.get_data()
-    #
-    #         if dht_data:
-    #
-    #             self.db.insert({
-    #                 "source": "dht22",
-    #                 "time": get_time(is_dataset=True),
-    #                 "temperature": dht_data["temp"],
-    #                 "humidity": dht_data["hum"]
-    #             })
-    #             return True
-    #         else:
-    #             return False
-    #
-    #     except Exception as e:
-    #         self.error.log.exception(e)
-    #         return False
+    def get_dht22(self):
+        self.update_config()
+        try:
+            dht_data = self.dht22.get_data()
+
+            if dht_data:
+
+                self.db.insert({
+                    "source": "dht22",
+                    "time": get_time(is_dataset=True),
+                    "temperature": dht_data["temp"],
+                    "humidity": dht_data["hum"]
+                })
+                return True
+            else:
+                return False
+
+        except Exception as e:
+            self.error.log.exception(e)
+            return False
 
     def get_scale(self):
         self.update_config()
@@ -136,7 +140,6 @@ class Dataset:
         self.update_config()
         try:
             fft_data = self.microphone.get_fft_data()
-            print(fft_data)
             # todo add duration
             # todo fft halbe herz schritte messen?
             if fft_data["status"]:
@@ -158,7 +161,6 @@ class Dataset:
                 return False
 
         except Exception as e:
-            print(e)
             self.error.log.exception(e)
             return False
 
@@ -176,6 +178,5 @@ class Dataset:
                 return False
 
         except Exception as e:
-            print(e)
             self.error.log.exception(e)
             return False
