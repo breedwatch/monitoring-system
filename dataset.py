@@ -72,6 +72,7 @@ class Dataset:
                 return False
 
         except Exception as e:
+            print(e)
             self.error.log.exception(e)
             return False
 
@@ -129,6 +130,7 @@ class Dataset:
             return True
 
         except Exception as e:
+            print(e)
             self.error.log.exception(e)
             return False
 
@@ -161,6 +163,7 @@ class Dataset:
                 return False
 
         except Exception as e:
+            print(e)
             self.error.log.exception(e)
             return False
 

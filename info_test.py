@@ -2,4 +2,4 @@ from helper.info_helper import InfoHelper
 
 info_helper = InfoHelper()
 
-info_helper.calc()
+print(info_helper.current_volt())

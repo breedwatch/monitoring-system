@@ -1,6 +1,13 @@
 from dataset import Dataset
-from helper.clear_data_helper import clear_data
+# from configuration.local_config import LocalConfig
+#
+# conf = LocalConfig()
+# conf.get_config_data()
+# print(conf.data)
 
 dataset = Dataset()
 
-dataset.write_wav()
+if dataset.get_fft():
+    print("okay")
+else:
+    print("failed")
