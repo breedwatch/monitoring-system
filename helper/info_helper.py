@@ -22,7 +22,7 @@ class InfoHelper:
             length = len(v_out) - 1
 
             return v_out[length][:-1]
-        except Exception:
+        except IOError:
             return False
 
     def calc(self):
@@ -58,26 +58,3 @@ class InfoHelper:
             f.write(str(self.current_volt()))
         f.close()
         return True
-
-
-# todo
-"""
-eigene Error Classes
-
-"""
-
-
-class ValueTooHighError(Exception):
-    def __init__(self, message):
-        # message wird in den Error Log geschrieben oder self healing tools?
-        pass
-
-try:
-    print("this")
-except ValueTooHighError:
-    pass
-
-
-def test_func(hello):
-    if not hello == "hello":
-        raise ValueTooHighError("das ist eine Fehlermeldung")

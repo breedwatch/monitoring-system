@@ -1,5 +1,5 @@
 from tinydb import TinyDB
-from helper.logger import ErrorHandler
+from helper.logger import ErrorHandler, SensorDataError
 from helper.time_helper import get_time, get_file_time, get_dir_time
 import mapping
 from configuration.local_config import LocalConfig
@@ -55,7 +55,7 @@ class Dataset:
                     for i in range(int(self.config.settings["median"])):
                         value = self.temp_sensor.tempC(x)
                         if value == 998 or value == 85.0:
-                            return False
+                            raise SensorDataError("DS18B20")
                         else:
                             ds_temp.append(self.temp_sensor.tempC(x))
                             time.sleep(3)
@@ -69,7 +69,7 @@ class Dataset:
                         })
                 return True
             else:
-                return False
+                raise SensorDataError("DS18B20")
 
         except Exception as e:
             self.error.log.exception(e)
@@ -89,10 +89,9 @@ class Dataset:
                 })
                 return True
             else:
-                return False
+                raise SensorDataError("AHT20")
         except Exception as e:
             self.error.log.exception(e)
-            return False
 
     def get_dht22(self):
         self.update_config()
@@ -109,16 +108,17 @@ class Dataset:
                 })
                 return True
             else:
-                return False
+                raise SensorDataError("DHT22")
 
         except Exception as e:
             self.error.log.exception(e)
-            return False
 
     def get_scale(self):
         self.update_config()
         try:
             weight = self.scale.get_data()
+            if not weight:
+                raise SensorDataError("SCALE")
 
             self.db.insert({
                 "source": "scale",
@@ -130,7 +130,6 @@ class Dataset:
 
         except Exception as e:
             self.error.log.exception(e)
-            return False
 
     def update_config(self):
         self.config.get_config_data()
@@ -158,11 +157,10 @@ class Dataset:
                 })
                 return True
             else:
-                return False
+                raise SensorDataError("MICROPHONE")
 
         except Exception as e:
             self.error.log.exception(e)
-            return False
 
     def get_wav(self):
         self.update_config()
@@ -175,7 +173,7 @@ class Dataset:
             if self.microphone.write_wav_data(filepath):
                 return True
             else:
-                return False
+                raise SensorDataError("MICROPHONE")
 
         except Exception as e:
             self.error.log.exception(e)
