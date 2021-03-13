@@ -1,9 +1,10 @@
 import configparser
+import mapping
 
 
 class LocalConfig:
     def __init__(self):
-        self.path = "/home/pi/conf.ini"
+        self.path = mapping.config_path
         self.config = configparser.ConfigParser()
         self.config.read(self.path)
 
@@ -59,3 +60,4 @@ class LocalConfig:
         except IOError as e:
             print(e)
 
+# 14 Uhr naechsten Dienstag

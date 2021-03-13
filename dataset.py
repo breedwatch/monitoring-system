@@ -6,6 +6,7 @@ from configuration.local_config import LocalConfig
 import time
 from numpy import median
 import os
+import csv
 
 # sensors = microphone, scale, ds18b20, aht20
 
@@ -35,6 +36,8 @@ class Dataset:
         if self.config.data["aht20"]:
             from sensorlib.aht20 import AHT20
             self.aht20 = AHT20()
+        if not os.path.exists(mapping.csv_data_path):
+            os.system(f"touch {mapping.csv_data_path}")
 
     def get_data(self, sensor_name):
         try:
@@ -62,11 +65,18 @@ class Dataset:
 
                     if range(len(ds_temp)) != 0 or ds_temp != "nan":
                         median_ds_temp = median(ds_temp)
-                        self.db.insert({
-                            "source": f"ds18b20-{x}",
-                            "time": get_time(is_dataset=True),
-                            "temperature": median_ds_temp,
-                        })
+                        with open(mapping.csv_data_path, mode='w+') as dataset_file:
+                            dataset_writer = csv.writer(dataset_file, delimiter=',', quotechar='"',
+                                                        quoting=csv.QUOTE_MINIMAL)
+                            # time, device_id, temp, humidity, weight
+                            dataset_writer.writerow([get_time(), f"ds18b20-{x}", median_ds_temp, '', ''])
+
+                        # self.db.insert({
+                        #     "source": f"ds18b20-{x}",
+                        #     "time": get_time(is_dataset=True),
+                        #     "temperature": median_ds_temp,
+                        # })
+                dataset_file.close()
                 return True
             else:
                 raise SensorDataError("DS18B20")
@@ -81,12 +91,18 @@ class Dataset:
             aht_data = self.aht20.get_data()
 
             if aht_data["status"]:
-                self.db.insert({
-                    "source": "aht20",
-                    "time": get_time(is_dataset=True),
-                    "temperature": aht_data["temp"],
-                    "humidity": aht_data["hum"]
-                })
+                with open(mapping.csv_data_path, mode='w+') as dataset_file:
+                    dataset_writer = csv.writer(dataset_file, delimiter=',', quotechar='"', quoting=csv.QUOTE_MINIMAL)
+                    # time, device_id, temp, humidity, weight
+                    dataset_writer.writerow([get_time(), 'aht20', aht_data["temp"], aht_data["hum"], ''])
+                dataset_file.close()
+
+                # self.db.insert({
+                #     "source": "aht20",
+                #     "time": get_time(is_dataset=True),
+                #     "temperature": aht_data["temp"],
+                #     "humidity": aht_data["hum"]
+                # })
                 return True
             else:
                 raise SensorDataError("AHT20")
@@ -99,13 +115,18 @@ class Dataset:
             dht_data = self.dht22.get_data()
 
             if dht_data:
+                with open(mapping.csv_data_path, mode='w+') as dataset_file:
+                    dataset_writer = csv.writer(dataset_file, delimiter=',', quotechar='"', quoting=csv.QUOTE_MINIMAL)
+                    # time, device_id, temp, humidity, weight
+                    dataset_writer.writerow([get_time(), 'dht22', dht_data["temp"], dht_data["hum"], ''])
+                dataset_file.close()
 
-                self.db.insert({
-                    "source": "dht22",
-                    "time": get_time(is_dataset=True),
-                    "temperature": dht_data["temp"],
-                    "humidity": dht_data["hum"]
-                })
+                # self.db.insert({
+                #     "source": "dht22",
+                #     "time": get_time(is_dataset=True),
+                #     "temperature": dht_data["temp"],
+                #     "humidity": dht_data["hum"]
+                # })
                 return True
             else:
                 raise SensorDataError("DHT22")
@@ -120,15 +141,22 @@ class Dataset:
             if not weight:
                 raise SensorDataError("SCALE")
 
-            self.db.insert({
-                "source": "scale",
-                "time": get_time(is_dataset=True),
-                "weight": weight,
-            })
+            with open(mapping.csv_data_path, mode='w+') as dataset_file:
+                dataset_writer = csv.writer(dataset_file, delimiter=',', quotechar='"', quoting=csv.QUOTE_MINIMAL)
+                # time, device_id, temp, humidity, weight
+                dataset_writer.writerow([get_time(), 'scale', '', '', weight])
+            dataset_file.close()
+
+            # self.db.insert({
+            #     "source": "scale",
+            #     "time": get_time(is_dataset=True),
+            #     "weight": weight,
+            # })
 
             return True
 
         except Exception as e:
+            print(e)
             self.error.log.exception(e)
 
     def update_config(self):
