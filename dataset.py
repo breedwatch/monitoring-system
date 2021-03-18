@@ -1,13 +1,11 @@
 from tinydb import TinyDB
-from helper.logger import ErrorHandler
+from helper.logger import ErrorHandler, SensorDataError
 from helper.time_helper import get_time, get_file_time, get_dir_time
 import mapping
 from configuration.local_config import LocalConfig
 import time
 from numpy import median
 import os
-
-# sensors = microphone, scale, ds18b20, aht20
 
 
 class Dataset:
@@ -16,9 +14,6 @@ class Dataset:
         self.config.get_config_data()
         self.sensors = self.config.data
         self.error = ErrorHandler()
-        # todo: wenn die Datei groesser als 5MB ist, erstelle eine neue db und benutz die
-        self.db = TinyDB(mapping.database_path)
-        self.db.truncate()
         # deprecated
         if self.config.data["dht22"]:
             from sensorlib.dht22 import DHT22
@@ -26,7 +21,7 @@ class Dataset:
         if self.config.data["ds18b20"]:
             from sensorlib.ds1820 import DS18B20
             self.temp_sensor = DS18B20()
-        if self.config.data["fft"] ^ self.config.data["wav"]:
+        if self.config.data["fft"] or self.config.data["wav"]:
             from sensorlib.microphone import Microphone
             self.microphone = Microphone()
         if self.config.data["scale"]:
@@ -35,15 +30,16 @@ class Dataset:
         if self.config.data["aht20"]:
             from sensorlib.aht20 import AHT20
             self.aht20 = AHT20()
+        if not os.path.exists(mapping.csv_data_path):
+            os.system(f"touch {mapping.csv_data_path}")
 
-    def get_data(self, sensor_name):
+        self.data = dict()
+
+    def get_data(self, sensor):
         try:
-            self.config.get_config_data()
-            for sensor, is_active in self.sensors.items():
-                if sensor_name == sensor and is_active:
-                    return getattr(self, 'get_' + sensor)()
+            return getattr(self, 'get_' + sensor)()
         except Exception as e:
-            print(e)
+            self.error.log.exception(e)
 
     def get_ds18b20(self):
         self.update_config()
@@ -55,21 +51,17 @@ class Dataset:
                     for i in range(int(self.config.settings["median"])):
                         value = self.temp_sensor.tempC(x)
                         if value == 998 or value == 85.0:
-                            return False
+                            raise SensorDataError("DS18B20")
                         else:
                             ds_temp.append(self.temp_sensor.tempC(x))
-                            time.sleep(3)
+                            time.sleep(1)
 
                     if range(len(ds_temp)) != 0 or ds_temp != "nan":
                         median_ds_temp = median(ds_temp)
-                        self.db.insert({
-                            "source": f"ds18b20-{x}",
-                            "time": get_time(is_dataset=True),
-                            "temperature": median_ds_temp,
-                        })
+                        self.data[f"ds18b20-{x}"] = median_ds_temp
                 return True
             else:
-                return False
+                raise SensorDataError("DS18B20")
 
         except Exception as e:
             print(e)
@@ -82,18 +74,13 @@ class Dataset:
             aht_data = self.aht20.get_data()
 
             if aht_data["status"]:
-                self.db.insert({
-                    "source": "aht20",
-                    "time": get_time(is_dataset=True),
-                    "temperature": aht_data["temp"],
-                    "humidity": aht_data["hum"]
-                })
+                self.data["temp"] =  aht_data["temp"]
+                self.data["hum"] =  aht_data["hum"]
                 return True
             else:
-                return False
+                raise SensorDataError("AHT20")
         except Exception as e:
             self.error.log.exception(e)
-            return False
 
     def get_dht22(self):
         self.update_config()
@@ -101,38 +88,28 @@ class Dataset:
             dht_data = self.dht22.get_data()
 
             if dht_data:
-
-                self.db.insert({
-                    "source": "dht22",
-                    "time": get_time(is_dataset=True),
-                    "temperature": dht_data["temp"],
-                    "humidity": dht_data["hum"]
-                })
+                self.data["temp"] = dht_data["temp"]
+                self.data["hum"] = dht_data["hum"]
                 return True
             else:
-                return False
+                raise SensorDataError("DHT22")
 
         except Exception as e:
             self.error.log.exception(e)
-            return False
 
     def get_scale(self):
         self.update_config()
         try:
             weight = self.scale.get_data()
-
-            self.db.insert({
-                "source": "scale",
-                "time": get_time(is_dataset=True),
-                "weight": weight,
-            })
-
-            return True
+            if weight:
+                self.data["weight"] = weight
+                return True
+            else:
+                raise SensorDataError("SCALE")
 
         except Exception as e:
             print(e)
             self.error.log.exception(e)
-            return False
 
     def update_config(self):
         self.config.get_config_data()
@@ -155,17 +132,16 @@ class Dataset:
                 db = TinyDB(f"{mapping.fft_path}/{dir_name}/{file_name}.json")
                 db.insert({
                     "source": "microphone",
-                    "time": get_time(is_dataset=True),
+                    "time": get_time(),
                     "data": str(fft_data["data"]),
                 })
                 return True
             else:
-                return False
+                raise SensorDataError("MICROPHONE")
 
         except Exception as e:
             print(e)
             self.error.log.exception(e)
-            return False
 
     def get_wav(self):
         self.update_config()
@@ -178,7 +154,7 @@ class Dataset:
             if self.microphone.write_wav_data(filepath):
                 return True
             else:
-                return False
+                raise SensorDataError("MICROPHONE")
 
         except Exception as e:
             self.error.log.exception(e)

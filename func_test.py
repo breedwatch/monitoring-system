@@ -1,5 +1,5 @@
 from dataset import Dataset
 
-data = Dataset()
+dataset = Dataset()
 
-data.get_data("aht20")
+dataset.get_scale()

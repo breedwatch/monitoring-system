@@ -60,3 +60,4 @@ class LocalConfig:
         except IOError as e:
             print(e)
 
+# 14 Uhr naechsten Dienstag

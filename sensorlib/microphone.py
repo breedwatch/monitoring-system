@@ -4,7 +4,6 @@ import numpy as np
 from scipy.io.wavfile import write
 from helper.logger import ErrorHandler
 from scipy import signal
-import os
 
 
 class Microphone:
@@ -26,18 +25,20 @@ class Microphone:
             audiodata = sd.rec(self.duration * self.fs, samplerate=self.fs, channels=1, dtype='float64')
             sd.wait()
             data = audiodata.transpose()
-            [F, pxx] = scipy.signal.welch(data,
-                                          fs=self.fs,
-                                          window='hanning',
-                                          nperseg=n_window,
-                                          noverlap=n_overlap,
-                                          nfft=n_fft,
-                                          detrend=False,
-                                          return_onesided=True,
-                                          scaling='density'
-                                          )
+            f, pxx = scipy.signal.welch(data,
+                                        fs=self.fs,
+                                        window='hanning',
+                                        nperseg=n_window,
+                                        noverlap=n_overlap,
+                                        nfft=n_fft,
+                                        detrend=False,
+                                        return_onesided=True,
+                                        scaling='density',
+                                        )
+
             temp_data = np.array(pxx).astype(float)
             data = temp_data.tolist()
+            print(data)
 
             return {"status": True, "data": data}
 
