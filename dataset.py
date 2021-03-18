@@ -6,9 +6,6 @@ from configuration.local_config import LocalConfig
 import time
 from numpy import median
 import os
-import csv
-
-# sensors = microphone, scale, ds18b20, aht20
 
 
 class Dataset:
@@ -17,9 +14,6 @@ class Dataset:
         self.config.get_config_data()
         self.sensors = self.config.data
         self.error = ErrorHandler()
-        # todo: wenn die Datei groesser als 5MB ist, erstelle eine neue db und benutz die
-        self.db = TinyDB(mapping.database_path)
-        self.db.truncate()
         # deprecated
         if self.config.data["dht22"]:
             from sensorlib.dht22 import DHT22
@@ -27,7 +21,7 @@ class Dataset:
         if self.config.data["ds18b20"]:
             from sensorlib.ds1820 import DS18B20
             self.temp_sensor = DS18B20()
-        if self.config.data["fft"] ^ self.config.data["wav"]:
+        if self.config.data["fft"] or self.config.data["wav"]:
             from sensorlib.microphone import Microphone
             self.microphone = Microphone()
         if self.config.data["scale"]:
@@ -39,14 +33,13 @@ class Dataset:
         if not os.path.exists(mapping.csv_data_path):
             os.system(f"touch {mapping.csv_data_path}")
 
-    def get_data(self, sensor_name):
+        self.data = dict()
+
+    def get_data(self, sensor):
         try:
-            self.config.get_config_data()
-            for sensor, is_active in self.sensors.items():
-                if sensor_name == sensor and is_active:
-                    return getattr(self, 'get_' + sensor)()
+            return getattr(self, 'get_' + sensor)()
         except Exception as e:
-            print(e)
+            self.error.log.exception(e)
 
     def get_ds18b20(self):
         self.update_config()
@@ -61,22 +54,11 @@ class Dataset:
                             raise SensorDataError("DS18B20")
                         else:
                             ds_temp.append(self.temp_sensor.tempC(x))
-                            time.sleep(3)
+                            time.sleep(1)
 
                     if range(len(ds_temp)) != 0 or ds_temp != "nan":
                         median_ds_temp = median(ds_temp)
-                        with open(mapping.csv_data_path, mode='w+') as dataset_file:
-                            dataset_writer = csv.writer(dataset_file, delimiter=',', quotechar='"',
-                                                        quoting=csv.QUOTE_MINIMAL)
-                            # time, device_id, temp, humidity, weight
-                            dataset_writer.writerow([get_time(), f"ds18b20-{x}", median_ds_temp, '', ''])
-
-                        # self.db.insert({
-                        #     "source": f"ds18b20-{x}",
-                        #     "time": get_time(is_dataset=True),
-                        #     "temperature": median_ds_temp,
-                        # })
-                dataset_file.close()
+                        self.data[f"ds18b20-{x}"] = median_ds_temp
                 return True
             else:
                 raise SensorDataError("DS18B20")
@@ -91,18 +73,8 @@ class Dataset:
             aht_data = self.aht20.get_data()
 
             if aht_data["status"]:
-                with open(mapping.csv_data_path, mode='w+') as dataset_file:
-                    dataset_writer = csv.writer(dataset_file, delimiter=',', quotechar='"', quoting=csv.QUOTE_MINIMAL)
-                    # time, device_id, temp, humidity, weight
-                    dataset_writer.writerow([get_time(), 'aht20', aht_data["temp"], aht_data["hum"], ''])
-                dataset_file.close()
-
-                # self.db.insert({
-                #     "source": "aht20",
-                #     "time": get_time(is_dataset=True),
-                #     "temperature": aht_data["temp"],
-                #     "humidity": aht_data["hum"]
-                # })
+                self.data["temp"] =  aht_data["temp"]
+                self.data["hum"] =  aht_data["hum"]
                 return True
             else:
                 raise SensorDataError("AHT20")
@@ -115,18 +87,8 @@ class Dataset:
             dht_data = self.dht22.get_data()
 
             if dht_data:
-                with open(mapping.csv_data_path, mode='w+') as dataset_file:
-                    dataset_writer = csv.writer(dataset_file, delimiter=',', quotechar='"', quoting=csv.QUOTE_MINIMAL)
-                    # time, device_id, temp, humidity, weight
-                    dataset_writer.writerow([get_time(), 'dht22', dht_data["temp"], dht_data["hum"], ''])
-                dataset_file.close()
-
-                # self.db.insert({
-                #     "source": "dht22",
-                #     "time": get_time(is_dataset=True),
-                #     "temperature": dht_data["temp"],
-                #     "humidity": dht_data["hum"]
-                # })
+                self.data["temp"] = dht_data["temp"]
+                self.data["hum"] = dht_data["hum"]
                 return True
             else:
                 raise SensorDataError("DHT22")
@@ -138,22 +100,11 @@ class Dataset:
         self.update_config()
         try:
             weight = self.scale.get_data()
-            if not weight:
+            if weight:
+                self.data["weight"] = weight
+                return True
+            else:
                 raise SensorDataError("SCALE")
-
-            with open(mapping.csv_data_path, mode='w+') as dataset_file:
-                dataset_writer = csv.writer(dataset_file, delimiter=',', quotechar='"', quoting=csv.QUOTE_MINIMAL)
-                # time, device_id, temp, humidity, weight
-                dataset_writer.writerow([get_time(), 'scale', '', '', weight])
-            dataset_file.close()
-
-            # self.db.insert({
-            #     "source": "scale",
-            #     "time": get_time(is_dataset=True),
-            #     "weight": weight,
-            # })
-
-            return True
 
         except Exception as e:
             print(e)
@@ -180,7 +131,7 @@ class Dataset:
                 db = TinyDB(f"{mapping.fft_path}/{dir_name}/{file_name}.json")
                 db.insert({
                     "source": "microphone",
-                    "time": get_time(is_dataset=True),
+                    "time": get_time(),
                     "data": str(fft_data["data"]),
                 })
                 return True
