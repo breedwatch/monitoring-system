@@ -10,8 +10,6 @@ import shutil
 
 class USBHandler:
     def __init__(self):
-        from sensorlib.rgb import RGB
-        self.led = RGB()
         self.config = LocalConfig()
         self.config.get_config_data()
         self.info_helper = InfoHelper()
@@ -38,79 +36,63 @@ class USBHandler:
                     return usb_found, path
             time.sleep(5)
 
-    def listen(self):
-        while True:
-            try:
-                found, self.stick_path = self.is_mounted()
-                if found:
-                    # indicate that the stick was mounted
-                    self.led.blink("green", 3, 0.3)
+    def prepare_usb_drive(self):
+        try:
+            found, self.stick_path = self.is_mounted()
+            if found:
+                # list files / dirs on stick
+                stick_files = os.listdir(self.stick_path)
+                stick_device_path = f"{self.stick_path}/{self.config.settings['device_name']}"
 
-                    # list files / dirs on stick
-                    stick_files = os.listdir(self.stick_path)
-                    stick_device_path = f"{self.stick_path}/{self.config.settings['device_name']}"
-
-                    for files in stick_files:
-                        if self.config.settings['device_name'] not in files:
-                            if not os.path.exists(stick_device_path):
-                                os.mkdir(stick_device_path)
-                        else:
-                            device_stick_files = os.listdir(stick_device_path)
-                            for stick_files in device_stick_files:
-                                if "conf.ini" in stick_files:
-                                    config.get_config_data()
-                                    scale_offset = config.scale["offset"]
-                                    scale_ratio = config.scale["ratio"]
-                                    is_calibrated = config.scale["calibrated"]
-                                    shutil.copy(os.path.join(stick_device_path, "conf.ini"), mapping.config_path)
-                                    config.set_config_data("SCALE", "ratio", scale_ratio)
-                                    config.set_config_data("SCALE", "offset", scale_offset)
-                                    config.set_config_data("SCALE", "calibrated", is_calibrated)
-                                    break
-
-                    self.config.get_config_data()
-                    if self.config.settings["delete_after_usb"]:
-                        shutil.move(mapping.data_dir_path, f"{self.stick_path}/{self.config.settings['device_name']}")
-
-                        # create new data dir
-                        os.mkdir(mapping.data_dir_path)
-                        # create fft dir
-                        os.mkdir(os.path.join(mapping.data_dir_path, "fft"))
-                        # create wav dir
-                        os.mkdir(os.path.join(mapping.data_dir_path, "wav"))
-                        # create data.json
-                        os.system(f"touch {mapping.database_path}")
-
+                for files in stick_files:
+                    if self.config.settings['device_name'] not in files:
+                        if not os.path.exists(stick_device_path):
+                            os.mkdir(stick_device_path)
                     else:
-                        shutil.copytree(mapping.data_dir_path,
-                                        f"{self.stick_path}/{self.config.settings['device_name']}/data")
-                        time.sleep(0.5)
+                        device_stick_files = os.listdir(stick_device_path)
+                        for stick_files in device_stick_files:
+                            if "conf.ini" in stick_files:
+                                self.config.get_config_data()
+                                scale_offset = self.config.scale["offset"]
+                                scale_ratio = self.config.scale["ratio"]
+                                is_calibrated = self.config.scale["calibrated"]
+                                shutil.copy(os.path.join(stick_device_path, "conf.ini"), mapping.config_path)
+                                self.config.set_config_data("SCALE", "ratio", scale_ratio)
+                                self.config.set_config_data("SCALE", "offset", scale_offset)
+                                self.config.set_config_data("SCALE", "calibrated", is_calibrated)
+                                break
 
-                    if self.info_helper.calc():
-                        shutil.move(mapping.info_log, f"{stick_device_path}/info.log")
-                        time.sleep(0.5)
+                self.config.get_config_data()
+                if self.config.settings["delete_after_usb"]:
+                    shutil.move(mapping.data_dir_path, f"{self.stick_path}/{self.config.settings['device_name']}")
 
-                    shutil.move(mapping.error_log, f"{stick_device_path}/error.log")
+                    # create new data dir
+                    os.mkdir(os.path.join(mapping.data_dir_path, "data"))
+                    # create fft dir
+                    os.mkdir(os.path.join(mapping.data_dir_path, "fft"))
+                    # create wav dir
+                    os.mkdir(os.path.join(mapping.data_dir_path, "wav"))
+                    # create data.csv
+                    os.system(f"touch {mapping.csv_data_path}")
+
+                else:
+                    shutil.copytree(mapping.data_dir_path,
+                                    f"{self.stick_path}/{self.config.settings['device_name']}/data")
                     time.sleep(0.5)
-                    os.mknod(mapping.error_log)
-                    os.system(f"sudo chmod 755 {mapping.error_log}")
+
+                if self.info_helper.calc():
+                    shutil.move(mapping.info_log, f"{stick_device_path}/info.log")
                     time.sleep(0.5)
 
-                    os.system(f"sudo umount {self.stick_path}")
-                    self.led.green()
-                    time.sleep(30)
-                    self.led.off()
-                    os.system("sudo reboot")
+                shutil.move(mapping.error_log, f"{stick_device_path}/error.log")
+                time.sleep(0.5)
+                os.mknod(mapping.error_log)
+                os.system(f"sudo chmod 755 {mapping.error_log}")
+                time.sleep(0.5)
 
-            except Exception as e:
-                print(e)
-                self.led.blink("red", 2, 4)
                 os.system(f"sudo umount {self.stick_path}")
-            time.sleep(5)
+                os.system("sudo reboot")
 
-
-config = LocalConfig()
-config.get_config_data()
-if config.scale["calibrated"]:
-    handler = USBHandler()
-    handler.listen()
+        except Exception as e:
+            os.system(f"sudo umount {self.stick_path}")
+        time.sleep(5)

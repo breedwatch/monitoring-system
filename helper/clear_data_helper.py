@@ -20,7 +20,7 @@ def clear_data():
     os.system(f"touch {mapping.error_log}")
     # set read/write all to error.log
     os.system(f"sudo chmod 777 {mapping.error_log}")
-    # create data.json
-    os.system(f"touch {mapping.database_path}")
-    # set read/write all to data.json
-    os.system(f"sudo chmod 777 {mapping.database_path}")
+    # create data.csv
+    os.system(f"touch {mapping.csv_data_path}")
+    # set read/write all to data.csv
+    os.system(f"sudo chmod 777 {mapping.csv_data_path}")

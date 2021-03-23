@@ -7,7 +7,7 @@ from time import sleep
 
 class RGB:
     def __init__(self):
-        self.led = RGBLED(red=17, green=23, blue=22)
+        self.led = RGBLED(red=23, green=24, blue=25)
         self.led.off()
 
     def green(self):

@@ -38,7 +38,6 @@ class Microphone:
 
             temp_data = np.array(pxx).astype(float)
             data = temp_data.tolist()
-            print(data)
 
             return {"status": True, "data": data}
 
