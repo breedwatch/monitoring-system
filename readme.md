@@ -6,3 +6,5 @@ https://github.com/anderswodenker/beemo/wiki
 - update over USB
 - read and config WittyPi over USB
 - stability and self healing (reads error.log and reacts to)
+
+- is there an usb stick?

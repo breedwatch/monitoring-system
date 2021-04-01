@@ -7,36 +7,14 @@ import os
 import csv
 import mapping
 from helper.time_helper import get_time
-import pyudev
+from helper.usb_helper import USBHelper
 
 dataset = Dataset()
 config = LocalConfig()
 error = ErrorHandler()
 
-# todo: usb stick check
-
-
-def is_mounted():
-    try:
-        context = pyudev.Context()
-        removable = [device for device in context.list_devices(subsystem='block', DEVTYPE='disk') if
-                     device.attributes.asstring('removable') == "1"]
-
-        for device in removable:
-            partitions = [device.device_node for device in
-                          context.list_devices(subsystem='block', DEVTYPE='partition', parent=device)]
-
-            for partition in partitions:
-                path = f"/home/pi/usb-drive{partition}"
-                if not os.path.exists(os.path.join(path)):
-                    os.system(f"sudo mkdir {os.path.join(path)}")
-                os.system(f"sudo mount {partition} {path}")
-                usb_found = True
-                print(path)
-                return usb_found, path
-    except Exception as e:
-        error.log.exception(e)
-        return False, False
+usb_handler = USBHelper()
+usb_handler.prepare_usb_drive()
 
 
 def write_data(data):
@@ -45,25 +23,23 @@ def write_data(data):
     :param data: csv list data
     :return: bool
     """
-
+    # todo: change to local path if usb not found
     try:
-        is_usb, usb_path = is_mounted()
-        if is_usb:
-            path = usb_path
-        else:
-            path = mapping.csv_data_path
-        with open(path, mode='a+') as dataset_file:
+        with open(os.path.join(f"{mapping.usb_path}/{config.settings['device_name']}/data.csv"),
+                  mode='a+') as dataset_file:
             dataset_writer = csv.writer(dataset_file, delimiter=',', quotechar='"', quoting=csv.QUOTE_MINIMAL)
             dataset_writer.writerow(data)
         dataset_file.close()
+
         return True
     except Exception as e:
-        error.log.exception(e)
+        print(e)
         return False
 
 
 if not config.scale["calibrated"]:
     from sensorlib.rgb import RGB
+
     led = RGB()
     # calibration
     try:
@@ -73,7 +49,7 @@ if not config.scale["calibrated"]:
         led.blink("red", 30, 1)
         dataset.scale.setup()
         # put the calibration weight on the scale
-        led.blink("green", 15, 1)
+        led.blink("green", 30, 1)
         dataset.scale.calibrate(int(config.scale["calibrate_weight"]))
         # all done
         led.blink("green", 3, 0.3)
@@ -133,11 +109,11 @@ else:
             if not write_data(csv_data):
                 error.log.exception("data writing failed")
 
+            os.system("sudo shutdown now")
+
             # sleep x Seconds (app_weight_seconds) (conf.ini)
-            time.sleep(int(config.settings["app_wait_seconds"]))
+            # time.sleep(int(config.settings["app_wait_seconds"]))
         except Exception as e:
             print(e)
             error.log.exception(e)
             continue
-        except KeyboardInterrupt:
-            exit()
