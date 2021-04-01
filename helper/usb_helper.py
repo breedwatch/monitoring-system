@@ -37,6 +37,7 @@ class USBHelper:
         is_scale_reset = False
         is_wittypi_script = False
         is_tara = False
+        is_update = False
         try:
             # create device dir on usb stick
             if not os.path.exists(self.config.usb_path):
@@ -68,6 +69,15 @@ class USBHelper:
 
                 if "reset" in stick_files:
                     is_scale_reset = True
+
+                if "update.sh" in stick_files:
+                    is_update = True
+
+            if is_update:
+                shutil.copy(os.path.join(self.config.usb_path, "update.sh"), mapping.update_file)
+                os.system(f"sudo rm {self.config.usb_path}/update.sh")
+                call(mapping.update_file)
+                os.system("sudo reboot")
 
             if is_config:
                 self.update_config()
