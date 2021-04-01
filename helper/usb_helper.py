@@ -27,21 +27,42 @@ class USBHelper:
         self.config.set_config_data("SCALE", "offset", scale_offset)
 
     def reset_scale(self):
+        # set scale values to zero
         self.config.get_config_data()
         self.config.set_config_data("SCALE", "ratio", 0)
         self.config.set_config_data("SCALE", "offset", 0)
         self.config.set_config_data("SCALE", "calibrated", 0)
 
+    def update_system(self):
+        print("update system")
+        # update app data from github
+
+        # create usb update file path
+        usb_update_file = os.path.join(self.config.usb_path, "update.sh")
+
+        # copy update file to local path
+        shutil.copy(usb_update_file, mapping.update_file)
+
+        # execute and remove update file
+        os.system(f"sudo chmod +x {mapping.update_file}")
+        os.system(f"sudo rm {usb_update_file}")
+        call(mapping.update_file)
+
+        os.system("sudo reboot")
+
     def prepare_usb_drive(self):
+        print("prepare")
         is_config = False
         is_scale_reset = False
         is_wittypi_script = False
         is_tara = False
         is_update = False
         try:
+            print("create pathes")
             # create device dir on usb stick
             if not os.path.exists(self.config.usb_path):
                 os.mkdir(self.config.usb_path)
+                os.mkdir(os.path.join(self.config.usb_path, "data"))
 
             # create fft dir on usb stick
             if not os.path.exists(os.path.join(self.config.usb_path, "fft")):
@@ -55,15 +76,12 @@ class USBHelper:
             device_stick_files = os.listdir(self.config.usb_path)
             for stick_files in device_stick_files:
 
-                # usb stick has new conf.ini
                 if "conf.ini" in stick_files:
                     is_config = True
 
-                # usb has new wittypi script
                 if "schedule.wpi" in stick_files:
                     is_wittypi_script = True
 
-                # usb has tara file
                 if "tara" in stick_files:
                     is_tara = True
 
@@ -74,10 +92,7 @@ class USBHelper:
                     is_update = True
 
             if is_update:
-                shutil.copy(os.path.join(self.config.usb_path, "update.sh"), mapping.update_file)
-                os.system(f"sudo rm {self.config.usb_path}/update.sh")
-                call(mapping.update_file)
-                os.system("sudo reboot")
+                self.update_system()
 
             if is_config:
                 self.update_config()
