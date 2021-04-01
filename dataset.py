@@ -37,12 +37,12 @@ class Dataset:
 
     def get_data(self, sensor):
         try:
+            self.config.get_config_data()
             return getattr(self, 'get_' + sensor)()
         except Exception as e:
             self.error.log.exception(e)
 
     def get_ds18b20(self):
-        self.update_config()
         try:
             sensor_counter = self.temp_sensor.device_count()
             ds_temp = []
@@ -70,7 +70,6 @@ class Dataset:
 
     def get_aht20(self):
         try:
-            self.update_config()
             aht_data = self.aht20.get_data()
 
             if aht_data["status"]:
@@ -83,7 +82,6 @@ class Dataset:
             self.error.log.exception(e)
 
     def get_dht22(self):
-        self.update_config()
         try:
             dht_data = self.dht22.get_data()
 
@@ -98,7 +96,6 @@ class Dataset:
             self.error.log.exception(e)
 
     def get_scale(self):
-        self.update_config()
         try:
             weight = self.scale.get_data()
             if weight:
@@ -108,28 +105,24 @@ class Dataset:
                 raise SensorDataError("SCALE")
 
         except Exception as e:
-            print(e)
             self.error.log.exception(e)
 
-    def update_config(self):
-        self.config.get_config_data()
-        self.microphone.write_configuration_data(int(self.config.audio["duration"]), int(self.config.audio["fs"]))
-
     def get_fft(self):
-        self.update_config()
         try:
             fft_data = self.microphone.get_fft_data()
-            # todo add duration
-            # todo fft halbe herz schritte messen?
             if fft_data["status"]:
+
                 dir_name = get_dir_time()
-                if not os.path.exists(f"{mapping.fft_path}/{dir_name}"):
-                    os.system(f"sudo mkdir {mapping.fft_path}/{dir_name}")
+                dir_path = f"{self.config.usb_path}/fft/{dir_name}"
 
                 file_name = get_file_time()
-                os.system(f"sudo touch {mapping.fft_path}/{dir_name}/{file_name}.json")
-                os.system(f"sudo chmod 777 {mapping.fft_path}/{dir_name}/{file_name}.json")
-                db = TinyDB(f"{mapping.fft_path}/{dir_name}/{file_name}.json")
+                file_path = f"{dir_path}/{file_name}.json"
+
+                if not os.path.exists(dir_path):
+                    os.mkdir(dir_path)
+
+                os.system(f"sudo touch {file_path}")
+                db = TinyDB(file_path)
                 db.insert({
                     "source": "microphone",
                     "time": get_time(),
@@ -144,13 +137,16 @@ class Dataset:
             self.error.log.exception(e)
 
     def get_wav(self):
-        self.update_config()
         try:
             dir_name = get_dir_time()
-            if not os.path.exists(f"{mapping.wav_path}/{dir_name}"):
-                os.system(f"sudo mkdir {mapping.wav_path}/{dir_name}")
+            dir_path = f"{self.config.usb_path}/wav/{dir_name}"
+
             filename = get_file_time()
-            filepath = f"{mapping.wav_path}/{dir_name}/{filename}.wav"
+            filepath = f"{dir_path}/{filename}.wav"
+
+            if not os.path.exists(dir_path):
+                os.mkdir(dir_path)
+
             if self.microphone.write_wav_data(filepath):
                 return True
             else:

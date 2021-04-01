@@ -4,6 +4,7 @@ import numpy as np
 from scipy.io.wavfile import write
 from helper.logger import ErrorHandler
 from scipy import signal
+from configuration.local_config import LocalConfig
 
 
 class Microphone:
@@ -11,26 +12,22 @@ class Microphone:
         self.fs = 0
         self.duration = 0
         self.error = ErrorHandler()
-
-    def write_configuration_data(self, duration, fs):
-        self.duration = int(duration)
-        self.fs = int(fs)
+        self.config = LocalConfig()
 
     def get_fft_data(self):
-        n_window = pow(2, 12)
-        n_overlap = n_window / 2
-        n_fft = n_window
 
         try:
-            audiodata = sd.rec(self.duration * self.fs, samplerate=self.fs, channels=1, dtype='float64')
+            self.config.get_config_data()
+            audiodata = sd.rec(int(self.config.audio["duration"]) * int(self.config.audio["fs"]),
+                               samplerate=int(self.config.audio["fs"]), channels=1, dtype='float64')
             sd.wait()
             data = audiodata.transpose()
             f, pxx = scipy.signal.welch(data,
-                                        fs=self.fs,
+                                        fs=int(self.config.audio["fs"]),
                                         window='hanning',
-                                        nperseg=n_window,
-                                        noverlap=n_overlap,
-                                        nfft=n_fft,
+                                        nperseg=int(self.config.audio["nperseg"]),
+                                        noverlap=int(self.config.audio["noverlap"]),
+                                        nfft=int(self.config.audio["nfft"]),
                                         detrend=False,
                                         return_onesided=True,
                                         scaling='density',
@@ -38,7 +35,6 @@ class Microphone:
 
             temp_data = np.array(pxx).astype(float)
             data = temp_data.tolist()
-            print(data)
 
             return {"status": True, "data": data}
 
@@ -49,11 +45,13 @@ class Microphone:
 
     def write_wav_data(self, filepath):
         try:
-            recording = sd.rec(self.duration * self.fs, samplerate=self.fs, channels=2)
+            self.config.get_config_data()
+            recording = sd.rec(int(self.config.audio["duration"]) * int(self.config.audio["fs"]),
+                               samplerate=int(self.config.audio["fs"]),
+                               channels=2)
             sd.wait()
-            write(filepath, self.fs, recording)
+            write(filepath, int(self.config.audio["fs"]), recording)
             return True
         except Exception as e:
-            print(e)
             self.error.log.exception(e)
             return False

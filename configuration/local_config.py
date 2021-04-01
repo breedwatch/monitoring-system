@@ -13,6 +13,8 @@ class LocalConfig:
         self.scale = dict()
         self.data = dict()
         self.error = dict()
+
+        self.usb_path = ""
         self.get_config_data()
 
     def get_config_data(self):
@@ -33,6 +35,8 @@ class LocalConfig:
             for key, value in self.config.items("ERROR"):
                 value = self.is_bool(value)
                 self.error[key] = value
+
+            self.usb_path = f"{mapping.usb_path}/{self.settings['device_name']}"
         except IOError:
             return False
 
@@ -49,7 +53,6 @@ class LocalConfig:
         self.set_config_data("ERROR", sensor, value)
 
     def set_config_data(self, section, key, value):
-        print(f"set config data {value}")
         self.config.set(section, key, str(value))
         self.write_config()
 
