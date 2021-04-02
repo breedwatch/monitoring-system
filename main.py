@@ -6,7 +6,7 @@ import time
 import os
 import csv
 import mapping
-from helper.time_helper import get_time
+from helper.time_helper import get_file_time
 from helper.usb_helper import USBHelper
 
 dataset = Dataset()
@@ -72,7 +72,8 @@ else:
             config.get_config_data()
 
             # add time first
-            csv_data.append(get_time())
+            dataset.timestamp = get_file_time()
+            csv_data.append(dataset.timestamp)
 
             # iterate all sensors in DATA (conf.ini)
             for sensor, is_active in config.data.items():
@@ -109,10 +110,11 @@ else:
             if not write_data(csv_data):
                 error.log.exception("data writing failed")
 
-            os.system("sudo shutdown now")
+            #os.system("sudo shutdown now")
 
             # sleep x Seconds (app_weight_seconds) (conf.ini)
-            # time.sleep(int(config.settings["app_wait_seconds"]))
+            print("end")
+            time.sleep(int(config.settings["app_wait_seconds"]))
         except Exception as e:
             print(e)
             error.log.exception(e)

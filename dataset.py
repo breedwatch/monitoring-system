@@ -30,10 +30,9 @@ class Dataset:
         if self.config.data["aht20"]:
             from sensorlib.aht20 import AHT20
             self.aht20 = AHT20()
-        if not os.path.exists(mapping.csv_data_path):
-            os.system(f"touch {mapping.csv_data_path}")
 
         self.data = dict()
+        self.timestamp = ""
 
     def get_data(self, sensor):
         try:
@@ -115,7 +114,7 @@ class Dataset:
                 dir_name = get_dir_time()
                 dir_path = f"{self.config.usb_path}/fft/{dir_name}"
 
-                file_name = get_file_time()
+                file_name = self.timestamp
                 file_path = f"{dir_path}/{file_name}.json"
 
                 if not os.path.exists(dir_path):
@@ -141,7 +140,7 @@ class Dataset:
             dir_name = get_dir_time()
             dir_path = f"{self.config.usb_path}/wav/{dir_name}"
 
-            filename = get_file_time()
+            filename = self.timestamp
             filepath = f"{dir_path}/{filename}.wav"
 
             if not os.path.exists(dir_path):
