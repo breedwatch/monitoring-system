@@ -1,5 +1,5 @@
 import adafruit_dht
-from helper.logger import ErrorHandler
+from helper.log_helper import ErrorHandler
 import board
 import time
 

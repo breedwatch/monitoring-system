@@ -2,7 +2,7 @@ import sounddevice as sd
 import scipy.io.wavfile
 import numpy as np
 from scipy.io.wavfile import write
-from helper.logger import ErrorHandler
+from helper.log_helper import ErrorHandler
 from scipy import signal
 from configuration.local_config import LocalConfig
 
@@ -48,7 +48,7 @@ class Microphone:
             self.config.get_config_data()
             recording = sd.rec(int(self.config.audio["duration"]) * int(self.config.audio["fs"]),
                                samplerate=int(self.config.audio["fs"]),
-                               channels=2)
+                               channels=1)
             sd.wait()
             write(filepath, int(self.config.audio["fs"]), recording)
             return True

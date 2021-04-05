@@ -1,7 +1,7 @@
 import logging
-import mapping
+import os
 
-logging.basicConfig(filename=mapping.error_log, level=logging.DEBUG,
+logging.basicConfig(filename=os.path.join("/media/usb/", "error.log"), level=logging.DEBUG,
                     format='%(asctime)s %(levelname)s %(name)s %(message)s')
 
 

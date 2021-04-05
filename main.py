@@ -1,20 +1,21 @@
-# Version 0.1.1 | CSV Version
 from dataset import Dataset
 from configuration.local_config import LocalConfig
-from helper.logger import ErrorHandler
+from helper.log_helper import ErrorHandler
 import time
 import os
 import csv
-import mapping
 from helper.time_helper import get_file_time
 from helper.usb_helper import USBHelper
+from sensorlib.rgb import RGB
 
+led = RGB()
+usb_handler = USBHelper()
+usb_handler.prepare_usb_drive()
 dataset = Dataset()
 config = LocalConfig()
 error = ErrorHandler()
 
-usb_handler = USBHelper()
-usb_handler.prepare_usb_drive()
+
 
 
 def write_data(data):
@@ -23,9 +24,8 @@ def write_data(data):
     :param data: csv list data
     :return: bool
     """
-    # todo: change to local path if usb not found
     try:
-        with open(os.path.join(f"{mapping.usb_path}/{config.settings['device_name']}/data.csv"),
+        with open(os.path.join(f"{config.usb_path}/data.csv"),
                   mode='a+') as dataset_file:
             dataset_writer = csv.writer(dataset_file, delimiter=',', quotechar='"', quoting=csv.QUOTE_MINIMAL)
             dataset_writer.writerow(data)
@@ -38,9 +38,7 @@ def write_data(data):
 
 
 if not config.scale["calibrated"]:
-    from sensorlib.rgb import RGB
 
-    led = RGB()
     # calibration
     try:
         # calibration mode
@@ -110,12 +108,11 @@ else:
             if not write_data(csv_data):
                 error.log.exception("data writing failed")
 
-            #os.system("sudo shutdown now")
+            os.system("sudo shutdown now")
 
             # sleep x Seconds (app_weight_seconds) (conf.ini)
-            print("end")
-            time.sleep(int(config.settings["app_wait_seconds"]))
+            # time.sleep(int(config.settings["app_wait_seconds"]))
         except Exception as e:
-            print(e)
+            led.blink("red", 10, 0.3)
             error.log.exception(e)
             continue

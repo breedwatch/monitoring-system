@@ -1,5 +1,5 @@
 from tinydb import TinyDB
-from helper.logger import ErrorHandler, SensorDataError
+from helper.log_helper import ErrorHandler, SensorDataError
 from helper.time_helper import get_time, get_file_time, get_dir_time
 import mapping
 from configuration.local_config import LocalConfig

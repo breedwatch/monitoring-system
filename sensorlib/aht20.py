@@ -1,6 +1,6 @@
 import board
 import adafruit_ahtx0
-from helper.logger import ErrorHandler
+from helper.log_helper import ErrorHandler
 
 
 class AHT20:

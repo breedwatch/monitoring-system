@@ -4,7 +4,7 @@ from configuration.local_config import LocalConfig
 from helper.info_helper import InfoHelper
 import mapping
 import shutil
-from helper.logger import ErrorHandler
+from helper.log_helper import ErrorHandler
 from subprocess import call
 
 
@@ -51,18 +51,17 @@ class USBHelper:
         os.system("sudo reboot")
 
     def prepare_usb_drive(self):
-        print("prepare")
         is_config = False
         is_scale_reset = False
         is_wittypi_script = False
         is_tara = False
         is_update = False
         try:
-            print("create pathes")
             # create device dir on usb stick
             if not os.path.exists(self.config.usb_path):
                 os.mkdir(self.config.usb_path)
-                os.mkdir(os.path.join(self.config.usb_path, "data"))
+                os.system(f"touch {os.path.join(self.config.usb_path, 'error.log')}")
+                self.info_helper.calc(self.config.usb_path)
 
             # create fft dir on usb stick
             if not os.path.exists(os.path.join(self.config.usb_path, "fft")):

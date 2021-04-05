@@ -3,7 +3,7 @@ from numpy import median
 import time
 from sensorlib.hx711 import HX711
 from configuration.local_config import LocalConfig
-from helper.logger import ErrorHandler
+from helper.log_helper import ErrorHandler
 GPIO.setmode(GPIO.BCM)
 
 
