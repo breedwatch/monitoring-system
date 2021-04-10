@@ -57,6 +57,13 @@ class USBHelper:
         is_tara = False
         is_update = False
         try:
+            # init
+            if self.config.settings["device_id"] == "init":
+                dirs = os.listdir(mapping.usb_path)
+                for stick_dir in dirs:
+                    if "." not in stick_dir:
+                        self.config.set_config_data("SETTINGS", "device_id", stick_dir)
+                        self.config.get_config_data()
             # create device dir on usb stick
             if not os.path.exists(self.config.usb_path):
                 os.mkdir(self.config.usb_path)
@@ -115,4 +122,3 @@ class USBHelper:
 
         except Exception as e:
             print(e)
-            os.system(f"sudo umount {self.stick_path}")

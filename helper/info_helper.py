@@ -44,8 +44,7 @@ class InfoHelper:
             if not os.path.exists(log_file_path):
                 os.system(f"sudo touch {log_file_path}")
             f = open(log_file_path, "r+")
-            f.write(f"Name: {self.config.settings['device_name']} \n")
-            f.write(f"Standort: {self.config.settings['device_location']} \n")
+            f.write(f"ID: {self.config.settings['device_id']} \n")
             f.write("Speicherplatz gesamt: %d GiB \n" % (total // (2**30)))
             f.write("Speicherplatz belegt: %d MB \n" % (used / 1024 / 1024))
             f.write("Speicherplatz frei: %d MB \n" % (free / 1024 / 1024))

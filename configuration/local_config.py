@@ -36,7 +36,7 @@ class LocalConfig:
                 value = self.is_bool(value)
                 self.error[key] = value
 
-            self.usb_path = f"{mapping.usb_path}/{self.settings['device_name']}"
+            self.usb_path = f"{mapping.usb_path}/{self.settings['device_id']}"
         except IOError:
             return False
 

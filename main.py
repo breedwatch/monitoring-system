@@ -7,6 +7,7 @@ import csv
 from helper.time_helper import get_file_time
 from helper.usb_helper import USBHelper
 from sensorlib.rgb import RGB
+import subprocess
 
 led = RGB()
 usb_handler = USBHelper()
@@ -14,8 +15,6 @@ usb_handler.prepare_usb_drive()
 dataset = Dataset()
 config = LocalConfig()
 error = ErrorHandler()
-
-
 
 
 def write_data(data):
@@ -32,8 +31,7 @@ def write_data(data):
         dataset_file.close()
 
         return True
-    except Exception as e:
-        print(e)
+    except Exception:
         return False
 
 
@@ -52,6 +50,10 @@ if not config.scale["calibrated"]:
         # all done
         led.blink("green", 3, 0.3)
         # reboot system
+
+        # rename hostname
+        subprocess.call(['hostname', str(config.settings["device_id"])])
+        subprocess.call("/home/pi/wittypi/syncTime.sh")
         os.system("sudo reboot")
     except Exception as e:
         led.blink("red", 5, 0.3)
@@ -80,7 +82,7 @@ else:
                     dataset.get_data(sensor)
 
             # add device id and location
-            csv_data.append(f"{config.settings['device_location']}{config.settings['device_name']}")
+            csv_data.append(f"{config.settings['device_id']}")
 
             # add hum from aht20 to csv
             if 'hum' in dataset.data:
@@ -108,11 +110,12 @@ else:
             if not write_data(csv_data):
                 error.log.exception("data writing failed")
 
-            os.system("sudo shutdown now")
-
-            # sleep x Seconds (app_weight_seconds) (conf.ini)
-            # time.sleep(int(config.settings["app_wait_seconds"]))
+            if bool(config.settings["autoshutdown"]):
+                os.system("sudo shutdown now")
+            else:
+                # sleep x Seconds (app_weight_seconds) (conf.ini)
+                time.sleep(int(config.settings["app_wait_seconds"]))
         except Exception as e:
+            print(e)
             led.blink("red", 10, 0.3)
-            error.log.exception(e)
             continue
