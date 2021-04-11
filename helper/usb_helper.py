@@ -56,6 +56,7 @@ class USBHelper:
         is_wittypi_script = False
         is_tara = False
         is_update = False
+        is_wpa = False
         try:
             # init
             if self.config.settings["device_id"] == "init":
@@ -96,6 +97,8 @@ class USBHelper:
 
                 if "update.sh" in stick_files:
                     is_update = True
+                if "wpa_supplicant.conf" in stick_files:
+                    is_wpa = True
 
             if is_update:
                 self.update_system()
@@ -119,6 +122,11 @@ class USBHelper:
 
             if is_scale_reset:
                 self.reset_scale()
+
+            if is_wpa:
+                shutil.copy(os.path.join(self.config.usb_path, "wpa_supplicant.conf"), mapping.wpa_path)
+                time.sleep(5)
+                os.system("sudo reboot")
 
         except Exception as e:
             print(e)
