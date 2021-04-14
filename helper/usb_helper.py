@@ -21,10 +21,12 @@ class USBHelper:
         self.config.get_config_data()
         scale_offset = self.config.scale["offset"]
         scale_ratio = self.config.scale["ratio"]
+        scale_calibrated = self.config.scale["calibrated"]
         shutil.copy(os.path.join(self.config.usb_path, "conf.ini"), mapping.config_path)
         self.config.get_config_data()
         self.config.set_config_data("SCALE", "ratio", scale_ratio)
         self.config.set_config_data("SCALE", "offset", scale_offset)
+        self.config.set_config_data("SCALE", "calibrated", scale_calibrated)
 
     def reset_scale(self):
         # set scale values to zero
@@ -33,8 +35,9 @@ class USBHelper:
         self.config.set_config_data("SCALE", "offset", 0)
         self.config.set_config_data("SCALE", "calibrated", 0)
 
+        os.system(f"sudo rm {self.config.usb_path}/reset")
+
     def update_system(self):
-        print("update system")
         # update app data from github
 
         # create usb update file path
@@ -125,6 +128,7 @@ class USBHelper:
 
             if is_wpa:
                 shutil.copy(os.path.join(self.config.usb_path, "wpa_supplicant.conf"), mapping.wpa_path)
+                os.system(f"rm {os.path.join(self.config.usb_path, 'wpa_supplicant.conf')}")
                 time.sleep(5)
                 os.system("sudo reboot")
 
