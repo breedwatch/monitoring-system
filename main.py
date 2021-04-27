@@ -122,6 +122,6 @@ else:
                 # sleep x Seconds (app_weight_seconds) (conf.ini)
                 time.sleep(int(config.settings["app_wait_seconds"]))
         except Exception as e:
-            print(e)
+            error.log.exception(e)
             led.blink("red", 10, 0.3)
             continue

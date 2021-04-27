@@ -33,8 +33,6 @@ class USBHelper:
                     if not is_data:
                         sensor_is_ok = False
 
-            self.config.set_config_data("AUDIO", "duration", duration)
-
             if sensor_is_ok:
                 return True
             else:
@@ -52,6 +50,7 @@ class USBHelper:
         scale_ratio = self.config.scale["ratio"]
         scale_calibrated = self.config.scale["calibrated"]
         shutil.copy(os.path.join(self.config.usb_path, "conf.ini"), mapping.config_path)
+        os.system(f"sudo chmod 755 {mapping.config_path}")
         self.config.get_config_data()
         self.config.set_config_data("SCALE", "ratio", scale_ratio)
         self.config.set_config_data("SCALE", "offset", scale_offset)
@@ -105,7 +104,9 @@ class USBHelper:
             if not os.path.exists(self.config.usb_path):
                 os.mkdir(self.config.usb_path)
                 os.system(f"touch {os.path.join(self.config.usb_path, 'error.log')}")
-                self.info_helper.calc(self.config.usb_path)
+
+            # calc information and write to stick
+            self.info_helper.calc(self.config.usb_path)
 
             # create fft dir on usb stick
             if not os.path.exists(os.path.join(self.config.usb_path, "fft")):

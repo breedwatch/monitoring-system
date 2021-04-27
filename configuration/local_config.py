@@ -1,5 +1,6 @@
 import configparser
 import mapping
+from helper.log_helper import ErrorHandler
 
 
 class LocalConfig:
@@ -7,6 +8,7 @@ class LocalConfig:
         self.path = mapping.config_path
         self.config = configparser.ConfigParser()
         self.config.read(self.path)
+        self.error_handler = ErrorHandler()
 
         self.settings = dict()
         self.audio = dict()
@@ -60,7 +62,5 @@ class LocalConfig:
         try:
             with open(self.path, 'w') as configfile:
                 self.config.write(configfile)
-        except IOError as e:
-            print(e)
-
-# 14 Uhr naechsten Dienstag
+        except Exception as e:
+            self.error_handler.log.exception(e)

@@ -53,7 +53,7 @@ class InfoHelper:
             f.write(f"Messungen pro Stunde: {round(cycles_per_hour, 2)} \n")
             f.write(f"Stunden bis Speicher voll: {estimated_cycles} Stunden \n")
             f.write(f"Tage bis Speicher voll: {round(estimated_cycles / 24, 1)} Tage \n")
-            f.write(f"Datum bis Speicher voll: {get_new_date(estimated_cycles)}")
+            f.write(f"Datum bis Speicher voll: {get_new_date(estimated_cycles)} \n")
             f.write("------------------------------------------------------- \n")
             f.write("WITTYPI")
             if self.current_volt():
