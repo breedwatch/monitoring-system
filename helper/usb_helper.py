@@ -16,6 +16,35 @@ class USBHelper:
         self.stick_path = mapping.usb_path
         self.error = ErrorHandler()
 
+    def test_system(self):
+        from dataset import Dataset
+        sensor_is_ok = True
+
+        dataset = Dataset()
+
+        duration = self.config.audio["duration"]
+        self.config.set_config_data("AUDIO", "duration", 10)
+
+        try:
+            for sensor, is_active in self.config.data.items():
+                # get data from sensor if active
+                if is_active:
+                    is_data = dataset.get_data(sensor)
+                    if not is_data:
+                        sensor_is_ok = False
+
+            self.config.set_config_data("AUDIO", "duration", duration)
+
+            if sensor_is_ok:
+                return True
+            else:
+                return False
+
+        except Exception as e:
+            self.error.log.exception(e)
+        finally:
+            self.config.set_config_data("AUDIO", "duration", duration)
+
     def update_config(self):
         # copy conf.ini data to local from usb stick
         self.config.get_config_data()
@@ -28,6 +57,8 @@ class USBHelper:
         self.config.set_config_data("SCALE", "offset", scale_offset)
         self.config.set_config_data("SCALE", "calibrated", scale_calibrated)
 
+        os.system(f"sudo rm {os.path.join(self.config.usb_path, 'conf.ini')}")
+
     def reset_scale(self):
         # set scale values to zero
         self.config.get_config_data()
@@ -35,7 +66,7 @@ class USBHelper:
         self.config.set_config_data("SCALE", "offset", 0)
         self.config.set_config_data("SCALE", "calibrated", 0)
 
-        os.system(f"sudo rm {self.config.usb_path}/reset")
+        os.system(f"sudo rm {os.path.join(self.config.usb_path, 'reset')}")
 
     def update_system(self):
         # update app data from github
@@ -60,6 +91,8 @@ class USBHelper:
         is_tara = False
         is_update = False
         is_wpa = False
+        is_test = False
+        is_sync_time = False
         try:
             # init
             if self.config.settings["device_id"] == "init":
@@ -86,6 +119,12 @@ class USBHelper:
             device_stick_files = os.listdir(self.config.usb_path)
             for stick_files in device_stick_files:
 
+                if "test" in stick_files:
+                    is_test = True
+
+                if "sync" in stick_files:
+                    is_sync_time = True
+
                 if "conf.ini" in stick_files:
                     is_config = True
 
@@ -106,20 +145,38 @@ class USBHelper:
             if is_update:
                 self.update_system()
 
+            if is_sync_time:
+                try:
+                    call("/home/pi/wittypi/syncTime.sh")
+                    os.system(f"sudo rm {os.path.join(self.config.usb_path, 'sync')}")
+                except Exception as e:
+                    self.error.log.exception(e)
+
+            if is_test:
+                from sensorlib.rgb import RGB
+                os.system(f"sudo rm {os.path.join(self.config.usb_path, 'test')}")
+
+                led = RGB()
+                if not self.test_system():
+                    led.red()
+                    time.sleep(3600)
+                else:
+                    led.blink("green", 5, 1)
+                os.system("sudo reboot")
+
             if is_config:
                 self.update_config()
 
             if is_wittypi_script:
                 shutil.copy(os.path.join(self.config.usb_path, "schedule.wpi"), mapping.witty_pi)
-                call("/home/pi/wittypi/syncTime.sh")
-                call("/home/pi/wittypi/runScript.sh")
+                os.system(f"sudo rm {os.path.join(self.config.usb_path, 'schedule.wpi')}")
+                call(mapping.witty_pi)
 
             if is_tara:
                 from sensorlib.scale import Scale
                 scale = Scale()
                 scale.tare()
                 os.system(f"sudo rm {self.config.usb_path}/tara")
-                print("restart")
                 time.sleep(5)
                 os.system("sudo reboot")
 

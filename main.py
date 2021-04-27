@@ -7,7 +7,7 @@ import csv
 from helper.time_helper import get_file_time
 from helper.usb_helper import USBHelper
 from sensorlib.rgb import RGB
-import subprocess
+from subprocess import call
 
 led = RGB()
 usb_handler = USBHelper()
@@ -42,21 +42,27 @@ if not config.scale["calibrated"]:
         # calibration mode
         led.blink("blue", 3, 0.3)
         # remove all items from scale please
-        led.blink("red", 30, 1)
+        led.blink("red", 15, 1)
         dataset.scale.setup()
         # put the calibration weight on the scale
-        led.blink("green", 30, 1)
+        led.blink("green", 15, 1)
         dataset.scale.calibrate(int(config.scale["calibrate_weight"]))
-        # all done
+        # calibration done
         led.blink("green", 3, 0.3)
-        # reboot system
 
-        # rename hostname
-        subprocess.call(['hostname', str(config.settings["device_id"])])
-        subprocess.call("/home/pi/wittypi/syncTime.sh")
+        try:
+            call("/home/pi/wittypi/syncTime.sh")
+        except Exception as e:
+            error.log.exception(e)
+            led.blink("red", 15, 0.5)
+
+        if not usb_handler.test_system():
+            led.red()
+            time.sleep(3600)
+
         os.system("sudo reboot")
     except Exception as e:
-        led.blink("red", 5, 0.3)
+        led.blink("red", 5, 0.5)
         error.log.exception(e)
 else:
     while True:
