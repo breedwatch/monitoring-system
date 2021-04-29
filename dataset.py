@@ -137,16 +137,22 @@ class Dataset:
 
     def get_wav(self):
         try:
+            is_test = False
+            if int(self.config.audio["duration"]) == 10:
+                is_test = True
             dir_name = get_dir_time()
             dir_path = f"{self.config.usb_path}/wav/{dir_name}"
 
             filename = self.timestamp
+            self.config.get_config_data()
             filepath = f"{dir_path}/{filename}.wav"
 
             if not os.path.exists(dir_path):
                 os.mkdir(dir_path)
 
             if self.microphone.write_wav_data(filepath):
+                if is_test:
+                    os.system(f"sudo rm {filepath}")
                 return True
             else:
                 raise SensorDataError("MICROPHONE")

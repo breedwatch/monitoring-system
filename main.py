@@ -52,6 +52,7 @@ if not config.scale["calibrated"]:
 
         try:
             call("/home/pi/wittypi/syncTime.sh")
+            os.system("i2cset -y 1 0x69 10 1")
         except Exception as e:
             error.log.exception(e)
             led.blink("red", 15, 0.5)

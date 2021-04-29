@@ -21,6 +21,7 @@ class USBHelper:
         sensor_is_ok = True
 
         dataset = Dataset()
+        self.config.get_config_data()
 
         duration = self.config.audio["duration"]
         self.config.set_config_data("AUDIO", "duration", 10)

@@ -62,5 +62,6 @@ class LocalConfig:
         try:
             with open(self.path, 'w') as configfile:
                 self.config.write(configfile)
+            configfile.close()
         except Exception as e:
             self.error_handler.log.exception(e)

@@ -69,6 +69,7 @@ class Scale:
             measured_weight = (average_weight - average_offset)
             self.ratio = int(measured_weight) / self.value
             self.hx.set_scale(self.ratio)
+            self.config.get_config_data()
             self.config.set_config_data("SCALE", "ratio", self.ratio)
             self.config.set_config_data("SCALE", "offset", self.hx.get_offset())
             self.config.set_config_data("SCALE", "calibrated", 1)

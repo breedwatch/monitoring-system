@@ -29,17 +29,17 @@ def get_new_date(estimated_hours):
 
 
 def get_token_time():
-    now = datetime.datetime.now()
+    now = datetime.datetime.utcnow().replace(tzinfo=pytz.utc)
     return now.strftime('%Y-%m-%dT%H:%M:%S') + now.strftime('.%f')[:0]
 
 
 def get_file_time():
-    now = datetime.datetime.now()
+    now = datetime.datetime.utcnow().replace(tzinfo=pytz.utc).now()
     return now.strftime('%Y-%m-%dT%H-%M-%S') + now.strftime('.%f')[:0]
 
 
 def get_dir_time():
-    now = datetime.datetime.now()
+    now = datetime.datetime.utcnow().replace(tzinfo=pytz.utc).now()
     return now.strftime('%Y-%m-%d')
 
 
