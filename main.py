@@ -4,7 +4,7 @@ from helper.log_helper import ErrorHandler
 import time
 import os
 import csv
-from helper.time_helper import get_file_time
+from helper.time_helper import get_file_time, set_timezone
 from helper.usb_helper import USBHelper
 from sensorlib.rgb import RGB
 from subprocess import call
@@ -15,6 +15,8 @@ usb_handler.prepare_usb_drive()
 dataset = Dataset()
 config = LocalConfig()
 error = ErrorHandler()
+
+set_timezone(config.settings["timezone"])
 
 
 def write_data(data):
