@@ -46,6 +46,7 @@ class USBHelper:
 
     def update_config(self):
         # copy conf.ini data to local from usb stick
+        # todo id
         self.config.get_config_data()
         scale_offset = self.config.scale["offset"]
         scale_ratio = self.config.scale["ratio"]
@@ -69,6 +70,7 @@ class USBHelper:
         os.system(f"sudo rm {os.path.join(self.config.usb_path, 'reset')}")
 
     def update_system(self):
+        print("is update!")
         # update app data from github
 
         # create usb update file path
@@ -80,6 +82,7 @@ class USBHelper:
         # execute and remove update file
         os.system(f"sudo chmod +x {mapping.update_file}")
         os.system(f"sudo rm {usb_update_file}")
+
         call(mapping.update_file)
 
         os.system("sudo reboot")
@@ -141,6 +144,7 @@ class USBHelper:
 
                 if "update.sh" in stick_files:
                     is_update = True
+
                 if "wpa_supplicant.conf" in stick_files:
                     is_wpa = True
 
@@ -170,6 +174,7 @@ class USBHelper:
                 self.update_config()
 
             if is_wittypi_script:
+                #todo wittipy log wird voll
                 shutil.copy(os.path.join(self.config.usb_path, "schedule.wpi"), mapping.witty_pi)
                 os.system(f"sudo rm {os.path.join(self.config.usb_path, 'schedule.wpi')}")
                 call(mapping.witty_pi)

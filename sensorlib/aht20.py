@@ -14,7 +14,7 @@ class AHT20:
             hum = self.sensor.relative_humidity
             status = True
 
-            data = {"temp": round(float(temp), 1), "hum": round(float(hum), 1), "status": status}
+            data = {"temp": round(float(temp), 2), "hum": round(float(hum), 2), "status": status}
             return data
         except Exception as e:
             self.error.log.exception(e)
