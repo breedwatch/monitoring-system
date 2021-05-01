@@ -106,7 +106,7 @@ class USBHelper:
             if self.config.settings["device_id"] == "init":
                 dirs = os.listdir(mapping.usb_path)
                 for stick_dir in dirs:
-                    if "." not in stick_dir:
+                    if "." not in stick_dir and "System Volume Information" not in stick_dir:
                         self.config.set_config_data("SETTINGS", "device_id", stick_dir)
                         self.config.get_config_data()
             # create device dir on usb stick
