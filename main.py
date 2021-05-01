@@ -9,7 +9,6 @@ from helper.usb_helper import USBHelper
 from sensorlib.rgb import RGB
 from subprocess import call
 
-# 0.1.6
 led = RGB()
 usb_handler = USBHelper()
 usb_handler.prepare_usb_drive()
@@ -133,3 +132,4 @@ else:
             error.log.exception(e)
             led.blink("red", 10, 0.3)
             continue
+# 0.1.6rev
