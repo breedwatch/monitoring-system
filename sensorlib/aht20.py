@@ -5,8 +5,12 @@ from helper.log_helper import ErrorHandler
 
 class AHT20:
     def __init__(self):
-        self.sensor = adafruit_ahtx0.AHTx0(board.I2C())
-        self.error = ErrorHandler()
+        try:
+            self.sensor = adafruit_ahtx0.AHTx0(board.I2C())
+            self.error = ErrorHandler()
+        except Exception as e:
+            print("no AHT20!!!")
+            print(e)
 
     def get_data(self):
         try:

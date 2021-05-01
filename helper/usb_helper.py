@@ -46,14 +46,15 @@ class USBHelper:
 
     def update_config(self):
         # copy conf.ini data to local from usb stick
-        # todo id
         self.config.get_config_data()
+        device_id = self.config.settings['device_id']
         scale_offset = self.config.scale["offset"]
         scale_ratio = self.config.scale["ratio"]
         scale_calibrated = self.config.scale["calibrated"]
         shutil.copy(os.path.join(self.config.usb_path, "conf.ini"), mapping.config_path)
         os.system(f"sudo chmod 755 {mapping.config_path}")
         self.config.get_config_data()
+        self.config.set_config_data("SETTINGS", "device_id", device_id)
         self.config.set_config_data("SCALE", "ratio", scale_ratio)
         self.config.set_config_data("SCALE", "offset", scale_offset)
         self.config.set_config_data("SCALE", "calibrated", scale_calibrated)
@@ -70,20 +71,23 @@ class USBHelper:
         os.system(f"sudo rm {os.path.join(self.config.usb_path, 'reset')}")
 
     def update_system(self):
-        print("is update!")
-        # update app data from github
+        try:
+            # update app data from github
 
-        # create usb update file path
-        usb_update_file = os.path.join(self.config.usb_path, "update.sh")
+            # create usb update file path
+            usb_update_file = os.path.join(self.config.usb_path, "update.sh")
 
-        # copy update file to local path
-        shutil.copy(usb_update_file, mapping.update_file)
+            # copy update file to local path
+            shutil.copy(usb_update_file, mapping.update_file)
 
-        # execute and remove update file
-        os.system(f"sudo chmod +x {mapping.update_file}")
-        os.system(f"sudo rm {usb_update_file}")
+            # execute and remove update file
+            os.system(f"sudo chmod 777 {mapping.update_file}")
+            os.system(f"sudo rm {usb_update_file}")
 
-        call(mapping.update_file)
+            call(mapping.update_file)
+        except Exception as e:
+            self.error.log.exception("NO UPDATE!")
+            self.error.log.exception(e)
 
         os.system("sudo reboot")
 
@@ -174,7 +178,7 @@ class USBHelper:
                 self.update_config()
 
             if is_wittypi_script:
-                #todo wittipy log wird voll
+                # todo wittipy log wird voll
                 shutil.copy(os.path.join(self.config.usb_path, "schedule.wpi"), mapping.witty_pi)
                 os.system(f"sudo rm {os.path.join(self.config.usb_path, 'schedule.wpi')}")
                 call(mapping.witty_pi)

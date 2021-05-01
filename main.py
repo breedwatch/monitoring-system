@@ -26,6 +26,7 @@ def write_data(data):
     :return: bool
     """
     try:
+        print(data)
         with open(os.path.join(f"{config.usb_path}/data.csv"),
                   mode='a+') as dataset_file:
             dataset_writer = csv.writer(dataset_file, delimiter=',', quotechar='"', quoting=csv.QUOTE_MINIMAL)
@@ -86,8 +87,10 @@ else:
 
             # iterate all sensors in DATA (conf.ini)
             for sensor, is_active in config.data.items():
+                print(f"get sensor {sensor}")
                 # get data from sensor if active
                 if is_active:
+                    print("is active!")
                     dataset.get_data(sensor)
 
             # add device id and location
@@ -125,6 +128,7 @@ else:
                 # sleep x Seconds (app_weight_seconds) (conf.ini)
                 time.sleep(int(config.settings["app_wait_seconds"]))
         except Exception as e:
+            print(e)
             error.log.exception(e)
             led.blink("red", 10, 0.3)
             continue
