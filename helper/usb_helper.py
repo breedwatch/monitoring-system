@@ -88,7 +88,6 @@ class USBHelper:
 
             os.system("sudo reboot")
         except Exception as e:
-            self.error.log.exception("NO UPDATE!")
             self.error.log.exception(e)
 
         os.system("sudo reboot")
