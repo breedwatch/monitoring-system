@@ -85,6 +85,8 @@ class USBHelper:
             os.system(f"sudo rm {usb_update_file}")
 
             call(mapping.update_file)
+
+            os.system("sudo reboot")
         except Exception as e:
             self.error.log.exception("NO UPDATE!")
             self.error.log.exception(e)
