@@ -1,7 +1,8 @@
 #!/bin/bash
 
-sudo rm -R /home/pi/beemo
-git clone https://github.com/breedwatch/monitoring-system /home/pi/beemo
+git init beemo
+cd /home/pi/beemo && git remote add origin https://github.com/breedwatch/monitoring-system.git
+cd /home/pi/beemo && git pull origin main
 sudo chmod -R 777 /home/pi/beemo
 sudo timedatectl set-timezone Etc/UTC
 
