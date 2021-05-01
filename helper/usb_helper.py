@@ -84,7 +84,7 @@ class USBHelper:
             os.system(f"sudo chmod 777 {mapping.update_file}")
             os.system(f"sudo rm {usb_update_file}")
 
-            os.system(f"sudo .{mapping.update_file}")
+            os.system(f"sudo sh {mapping.update_file}")
 
             os.system("sudo reboot")
         except Exception as e:
