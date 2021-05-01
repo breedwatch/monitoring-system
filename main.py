@@ -45,7 +45,7 @@ if not config.scale["calibrated"]:
         # calibration mode
         led.blink("blue", 3, 0.3)
         # remove all items from scale please
-        led.blink("red", 15, 1)
+        led.blink("red", 5, 1)
         dataset.scale.setup()
         # put the calibration weight on the scale
         led.blink("green", 15, 1)
