@@ -26,7 +26,6 @@ def write_data(data):
     :return: bool
     """
     try:
-        print(data)
         with open(os.path.join(f"{config.usb_path}/data.csv"),
                   mode='a+') as dataset_file:
             dataset_writer = csv.writer(dataset_file, delimiter=',', quotechar='"', quoting=csv.QUOTE_MINIMAL)
@@ -132,4 +131,4 @@ else:
             error.log.exception(e)
             led.blink("red", 10, 0.3)
             continue
-# 0.1.6rev6
+# 0.1.7

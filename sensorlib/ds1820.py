@@ -62,7 +62,7 @@ class DS18B20:
         equals_pos = lines[1].find('t=')
         if equals_pos != -1:
             temp = lines[1][equals_pos + 2:]
-            return float(temp) / 1000
+            return round((float(temp) / 1000), 2)
         else:
             # error
             return 999

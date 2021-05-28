@@ -140,10 +140,10 @@ class Dataset:
             is_test = False
             if int(self.config.audio["duration"]) == 10:
                 is_test = True
-            dir_name = get_dir_time()
-            dir_path = f"{self.config.usb_path}/wav/{dir_name}"
+            # dir_name = get_dir_time()
+            dir_path = f"{self.config.usb_path}/wav/"
 
-            filename = self.timestamp
+            filename = f"{self.timestamp}_{self.config.settings['device_id']}"
             self.config.get_config_data()
             filepath = f"{dir_path}/{filename}.wav"
 

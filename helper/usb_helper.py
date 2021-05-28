@@ -13,7 +13,6 @@ class USBHelper:
         self.config = LocalConfig()
         self.config.get_config_data()
         self.info_helper = InfoHelper()
-        self.stick_path = mapping.usb_path
         self.error = ErrorHandler()
 
     def test_system(self):
@@ -109,6 +108,7 @@ class USBHelper:
                     if "." not in stick_dir and "System Volume Information" not in stick_dir:
                         self.config.set_config_data("SETTINGS", "device_id", stick_dir)
                         self.config.get_config_data()
+
             # create device dir on usb stick
             if not os.path.exists(self.config.usb_path):
                 os.mkdir(self.config.usb_path)
