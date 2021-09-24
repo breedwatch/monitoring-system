@@ -19,3 +19,16 @@ then
 else
   echo "config NOT OK!"
 fi
+
+
+
+# todo alle Inhalte von /media/usb* in /media/usb verschieben
+# todo conf.ini verbleibt auf dem USB Stick und wird nicht geloescht. Sollte aber geloescht werden nach dem aendern!
+
+
+for VARIABLE in 1 2 3 4 5 .. N
+do
+	command1
+	command2
+	commandN
+done
