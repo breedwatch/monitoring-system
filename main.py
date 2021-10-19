@@ -8,6 +8,7 @@ from helper.time_helper import get_file_time, set_timezone
 from helper.usb_helper import USBHelper
 from sensorlib.rgb import RGB
 from subprocess import call
+from datetime import datetime
 
 led = RGB()
 usb_handler = USBHelper()
@@ -38,6 +39,12 @@ def write_data(data):
 
 
 if not config.scale["calibrated"]:
+
+    # config.get_config_data()
+    # timestamp = datetime.now().strftime("%d.%M.%Y")
+    # hive_id = config.settings['device_id']
+    #
+    # csv_name = f"{timestamp}_{hive_id}"
 
     # calibration
     try:
@@ -114,9 +121,20 @@ else:
                 csv_data.append(00)
 
             # add all ds18b20
+            ds18b20_counter = 0
             for key, val in dataset.data.items():
                 if "ds18b20" in key:
                     csv_data.append(val)
+                    ds18b20_counter += 1
+
+                # add two values of zero if no temp sensor is available
+                if ds18b20_counter == 0:
+                    csv_data.append(00)
+                    csv_data.append(00)
+
+                # add one value of zero if one of two temp sensors are not available
+                if ds18b20_counter < 2:
+                    csv_data.append(00)
 
             if not write_data(csv_data):
                 error.log.exception("data writing failed")
@@ -131,4 +149,3 @@ else:
             error.log.exception(e)
             led.blink("red", 10, 0.3)
             continue
-# 0.1.7
