@@ -30,6 +30,9 @@ class Dataset:
         if self.config.data["aht20"]:
             from sensorlib.aht20 import AHT20
             self.aht20 = AHT20()
+        if self.config.data['tmp117']:
+            from sensorlib.tmp117 import TMP117
+            self.tmp117 = TMP117()
 
         self.data = dict()
         self.timestamp = ""
@@ -77,6 +80,19 @@ class Dataset:
                 return True
             else:
                 raise SensorDataError("AHT20")
+        except Exception as e:
+            self.error.log.exception(e)
+
+    def get_tmp117(self):
+        try:
+            tmp117_data = self.tmp117.get_data()
+
+            if tmp117_data:
+                self.data['temp'] = tmp117_data['temp']
+                return True
+            else:
+                raise SensorDataError("TMP117")
+
         except Exception as e:
             self.error.log.exception(e)
 

@@ -27,7 +27,6 @@ def write_data(data):
     :return: bool
     """
     try:
-        print(data)
         with open(os.path.join(f"{config.usb_path}/data.csv"),
                   mode='a+') as dataset_file:
             dataset_writer = csv.writer(dataset_file, delimiter=',', quotechar='"', quoting=csv.QUOTE_MINIMAL)
@@ -105,19 +104,19 @@ else:
             if 'hum' in dataset.data:
                 csv_data.append(dataset.data["hum"])
             else:
-                csv_data.append(00)
+                csv_data.append('NA')
 
-            # add temp from aht20 to csv
+            # add temp from aht20 or tmp117 to csv
             if 'temp' in dataset.data:
                 csv_data.append(dataset.data["temp"])
             else:
-                csv_data.append(00)
+                csv_data.append('NA')
 
             # add weight to csv
             if 'weight' in dataset.data:
                 csv_data.append(dataset.data["weight"])
             else:
-                csv_data.append(00)
+                csv_data.append('NA')
 
             # add all ds18b20
             ds18b20_counter = 0
@@ -128,12 +127,12 @@ else:
 
             # add two values of zero if no temp sensor is available
             if ds18b20_counter == 0:
-                csv_data.append(00)
-                csv_data.append(00)
+                csv_data.append('NA')
+                csv_data.append('NA')
 
             # add one value of zero if one of two temp sensors are not available
             if ds18b20_counter == 1:
-                csv_data.append(00)
+                csv_data.append('NA')
 
             if not write_data(csv_data):
                 error.log.exception("data writing failed")
