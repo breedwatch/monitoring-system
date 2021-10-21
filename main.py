@@ -27,6 +27,7 @@ def write_data(data):
     :return: bool
     """
     try:
+        print(data)
         with open(os.path.join(f"{config.usb_path}/data.csv"),
                   mode='a+') as dataset_file:
             dataset_writer = csv.writer(dataset_file, delimiter=',', quotechar='"', quoting=csv.QUOTE_MINIMAL)
@@ -93,10 +94,8 @@ else:
 
             # iterate all sensors in DATA (conf.ini)
             for sensor, is_active in config.data.items():
-                print(f"get sensor {sensor}")
                 # get data from sensor if active
                 if is_active:
-                    print("is active!")
                     dataset.get_data(sensor)
 
             # add device id and location
@@ -127,14 +126,14 @@ else:
                     csv_data.append(val)
                     ds18b20_counter += 1
 
-                # add two values of zero if no temp sensor is available
-                if ds18b20_counter == 0:
-                    csv_data.append(00)
-                    csv_data.append(00)
+            # add two values of zero if no temp sensor is available
+            if ds18b20_counter == 0:
+                csv_data.append(00)
+                csv_data.append(00)
 
-                # add one value of zero if one of two temp sensors are not available
-                if ds18b20_counter < 2:
-                    csv_data.append(00)
+            # add one value of zero if one of two temp sensors are not available
+            if ds18b20_counter == 1:
+                csv_data.append(00)
 
             if not write_data(csv_data):
                 error.log.exception("data writing failed")
