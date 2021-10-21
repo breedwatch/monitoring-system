@@ -9,13 +9,35 @@ from helper.usb_helper import USBHelper
 from sensorlib.rgb import RGB
 from subprocess import call
 from datetime import datetime
+import git
+import mapping
+
+repo = git.Repo(mapping.app_path)
+master = repo.head.reference
 
 led = RGB()
 usb_handler = USBHelper()
 usb_handler.prepare_usb_drive()
-dataset = Dataset()
+
 config = LocalConfig()
 error = ErrorHandler()
+
+current_version = config.settings['version']
+git_version = master.commit.message
+
+
+try:
+    is_tmp = config.data['tmp117']
+except KeyError:
+    config.set_config_data('DATA', 'tmp117', 0)
+
+
+dataset = Dataset()
+
+
+if current_version != git_version:
+    config.set_config_data('SETTINGS', 'version', git_version)
+
 
 set_timezone(config.settings["timezone"])
 
