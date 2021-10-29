@@ -1,8 +1,8 @@
 #!/bin/bash
 
-ping -c3 -W1 -q 8.8.8.8 &>/dev/null
-status=$( echo $? )
-if [[ $status == 0 ]] ; then
+wget -q --spider http://google.com
+
+if [ $? -eq 0 ]; then
      # uncomment for tmp117 support
      # sudo pip3 install adafruit-circuitpython-tmp117
 
