@@ -184,7 +184,7 @@ class USBHelper:
                 # todo wittipy log wird voll
                 shutil.copy(os.path.join(self.config.usb_path, "schedule.wpi"), mapping.witty_pi)
                 os.system(f"sudo rm {os.path.join(self.config.usb_path, 'schedule.wpi')}")
-                call("/home/pi/wittypi/syncTime.sh")
+                call("/home/pi/wittypi/runScript.sh")
 
             if is_tara:
                 from sensorlib.scale import Scale
