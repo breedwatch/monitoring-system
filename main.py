@@ -25,7 +25,6 @@ error = ErrorHandler()
 current_version = config.settings['version']
 git_version = master.commit.message
 
-
 try:
     is_tmp = config.data['tmp117']
 except KeyError:
@@ -82,7 +81,8 @@ if not config.scale["calibrated"]:
         led.blink("green", 3, 0.3)
 
         try:
-            call("/home/pi/wittypi/syncTime.sh")
+            # manual says: The syncTime.sh script is not supposed to be manually run...
+            # call("/home/pi/wittypi/syncTime.sh")
             os.system("i2cset -y 1 0x69 10 1")
         except Exception as e:
             error.log.exception(e)
@@ -163,6 +163,7 @@ else:
                 os.system("sudo shutdown now")
             else:
                 # sleep x Seconds (app_weight_seconds) (conf.ini)
+                print('done')
                 time.sleep(int(config.settings["app_wait_seconds"]))
         except Exception as e:
             print(e)

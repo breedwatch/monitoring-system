@@ -130,7 +130,7 @@ class Dataset:
                 dir_name = get_dir_time()
                 dir_path = f"{self.config.usb_path}/fft/{dir_name}"
 
-                file_name = self.timestamp
+                file_name = get_file_time()
                 file_path = f"{dir_path}/{file_name}.json"
 
                 if not os.path.exists(dir_path):
@@ -156,10 +156,9 @@ class Dataset:
             is_test = False
             if int(self.config.audio["duration"]) == 10:
                 is_test = True
-            # dir_name = get_dir_time()
-            dir_path = f"{self.config.usb_path}/wav/"
+            dir_path = f"{self.config.usb_path}/wav"
 
-            filename = f"{self.timestamp}_{self.config.settings['device_id']}"
+            filename = f"{get_file_time()}_{self.config.settings['device_id']}"
             self.config.get_config_data()
             filepath = f"{dir_path}/{filename}.wav"
 

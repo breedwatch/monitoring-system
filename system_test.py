@@ -26,6 +26,17 @@ class SystemTest:
         finally:
             self.config.set_config_data("AUDIO", "duration", duration)
 
+    def test_audio(self):
+        duration = self.config.audio["duration"]
+        try:
+            self.config.set_config_data("AUDIO", "duration", 10)
+            test_data = self.dataset.get_data('wav')
+            print(test_data)
+        except Exception as e:
+            print(e)
+        finally:
+            self.config.set_config_data("AUDIO", "duration", duration)
+
 
 test = SystemTest()
 test.start_test()
