@@ -1,9 +1,13 @@
 # ds18b20.py
 # written by Roger Woollett
+# edited by anderswodenker
 
 import os
 import glob
 import time
+from helper.log_helper import ErrorHandler
+
+error = ErrorHandler()
 
 
 class DS18B20:
@@ -46,26 +50,29 @@ class DS18B20:
         return lines
 
     def tempC(self, index=0):
-        # call this to get the temperature in degrees C
-        # detected by a sensor
-        lines = self._read_temp(index)
-        retries = 5
-        while (lines[0].strip()[-3:] != 'YES') and (retries > 0):
-            # read failed so try again
-            time.sleep(0.1)
+        try:
+            # call this to get the temperature in degrees C
+            # detected by a sensor
             lines = self._read_temp(index)
-            retries -= 1
+            retries = 5
+            while (lines[0].strip()[-3:] != 'YES') and (retries > 0):
+                # read failed so try again
+                time.sleep(0.1)
+                lines = self._read_temp(index)
+                retries -= 1
 
-        if retries == 0:
-            return 998
+            if retries == 0:
+                return 998
 
-        equals_pos = lines[1].find('t=')
-        if equals_pos != -1:
-            temp = lines[1][equals_pos + 2:]
-            return round((float(temp) / 1000), 2)
-        else:
-            # error
-            return 999
+            equals_pos = lines[1].find('t=')
+            if equals_pos != -1:
+                temp = lines[1][equals_pos + 2:]
+                return round((float(temp) / 1000), 2)
+            else:
+                # error
+                return 999
+        except Exception as e:
+            error.log.exception(e)
 
     def device_count(self):
         # call this to see how many sensors have been detected

@@ -25,6 +25,7 @@ class InfoHelper:
         except IOError:
             return False
 
+    # calc data
     def calc(self, usb_path):
         try:
             self.config.get_config_data()
@@ -45,15 +46,14 @@ class InfoHelper:
                 os.system(f"sudo touch {log_file_path}")
             f = open(log_file_path, "r+")
             f.write(f"ID: {self.config.settings['device_id']} \n")
-            f.write("Speicherplatz gesamt: %d GiB \n" % (total // (2**30)))
-            f.write("Speicherplatz belegt: %d MB \n" % (used / 1024 / 1024))
-            f.write("Speicherplatz frei: %d MB \n" % (free / 1024 / 1024))
+            f.write("Filesize total: %d GiB \n" % (total // (2**30)))
+            f.write("Filesize used: %d MB \n" % (used / 1024 / 1024))
+            f.write("Filesize unused: %d MB \n" % (free / 1024 / 1024))
             f.write("------------------------------------------------------- \n")
-            f.write(f"Gesamt Anzahl Messungen bis Speicher voll: {round(possible_cycles, 2)} \n")
-            f.write(f"Messungen pro Stunde: {round(cycles_per_hour, 2)} \n")
-            f.write(f"Stunden bis Speicher voll: {estimated_cycles} Stunden \n")
-            f.write(f"Tage bis Speicher voll: {round(estimated_cycles / 24, 1)} Tage \n")
-            f.write(f"Datum bis Speicher voll: {get_new_date(estimated_cycles)} \n")
+            f.write(f"Total number of measurements until storage full: {round(possible_cycles, 2)} \n")
+            f.write(f"Measurementse per hour: {round(cycles_per_hour, 2)} \n")
+            f.write(f"Days until storage is full: {round(estimated_cycles / 24, 1)} days \n")
+            f.write(f"Date unitl storage is full: {get_new_date(estimated_cycles)} \n")
             f.write("------------------------------------------------------- \n")
             f.write("WITTYPI")
             if self.current_volt():
