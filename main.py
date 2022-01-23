@@ -86,7 +86,6 @@ if not config.scale["calibrated"]:
             os.system("i2cset -y 1 0x69 10 1")
         except Exception as e:
             error.log.exception(e)
-            led.blink("red", 15, 0.5)
 
         if not usb_handler.test_system():
             led.red()
