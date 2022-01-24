@@ -30,13 +30,10 @@ try:
 except KeyError:
     config.set_config_data('DATA', 'tmp117', 0)
 
-
 dataset = Dataset()
-
 
 if current_version != git_version:
     config.set_config_data('SETTINGS', 'version', git_version)
-
 
 set_timezone(config.settings["timezone"])
 
@@ -59,42 +56,43 @@ def write_data(data):
         return False
 
 
-if not config.scale["calibrated"]:
+if config.data['scale']:
+    if not config.scale["calibrated"]:
 
-    # config.get_config_data()
-    # timestamp = datetime.now().strftime("%d.%M.%Y")
-    # hive_id = config.settings['device_id']
-    #
-    # csv_name = f"{timestamp}_{hive_id}"
+        # config.get_config_data()
+        # timestamp = datetime.now().strftime("%d.%M.%Y")
+        # hive_id = config.settings['device_id']
+        #
+        # csv_name = f"{timestamp}_{hive_id}"
 
-    # calibration
-    try:
-        # calibration mode
-        led.blink("blue", 3, 0.3)
-        # remove all items from scale please
-        led.blink("red", 5, 1)
-        dataset.scale.setup()
-        # put the calibration weight on the scale
-        led.blink("green", 15, 1)
-        dataset.scale.calibrate(int(config.scale["calibrate_weight"]))
-        # calibration done
-        led.blink("green", 3, 0.3)
-
+        # calibration
         try:
-            # manual says: The syncTime.sh script is not supposed to be manually run...
-            # call("/home/pi/wittypi/syncTime.sh")
-            os.system("i2cset -y 1 0x69 10 1")
+            # calibration mode
+            led.blink("blue", 3, 0.3)
+            # remove all items from scale please
+            led.blink("red", 5, 1)
+            dataset.scale.setup()
+            # put the calibration weight on the scale
+            led.blink("green", 15, 1)
+            dataset.scale.calibrate(int(config.scale["calibrate_weight"]))
+            # calibration done
+            led.blink("green", 3, 0.3)
+
+            try:
+                # manual says: The syncTime.sh script is not supposed to be manually run...
+                # call("/home/pi/wittypi/syncTime.sh")
+                os.system("i2cset -y 1 0x69 10 1")
+            except Exception as e:
+                error.log.exception(e)
+
+            if not usb_handler.test_system():
+                led.red()
+                time.sleep(3600)
+
+            os.system("sudo reboot")
         except Exception as e:
+            led.blink("red", 5, 0.5)
             error.log.exception(e)
-
-        if not usb_handler.test_system():
-            led.red()
-            time.sleep(3600)
-
-        os.system("sudo reboot")
-    except Exception as e:
-        led.blink("red", 5, 0.5)
-        error.log.exception(e)
 else:
     while True:
         # start measuring
